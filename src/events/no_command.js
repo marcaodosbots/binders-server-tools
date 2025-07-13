@@ -4,8 +4,8 @@ module.exports = {
     execute(interaction) {
         // checa a lingua do usuario e define a frase certa numa variavelasd
         const content = interaction.locale === 'pt-BR'
-            ? '<:support:1393746978197733436> Estamos deixando as coisas mais incríveis! Entre no nosso [servidor de suporte](https://discord.gg/Y2jJadbUmY) e descubra, ao vivo, o que está acontecendo!'
-            : '<:support:1393746978197733436> We\'re making things more awesome! Join our [support server](https://discord.gg/Y2jJadbUmY) and find out, live, what\'s going on!';
+            ? '<:support:1393820810434576434> Estamos deixando as coisas mais incríveis! Entre no nosso [servidor de suporte](https://discord.gg/Y2jJadbUmY) e descubra, ao vivo, o que está acontecendo!'
+            : '<:support:1393820810434576434> We\'re making things more awesome! Join our [support server](https://discord.gg/Y2jJadbUmY) and find out, live, what\'s going on!';
 
         // agora a gente manda a resposta uma vez só, com a frase que a gente escolheu
         return interaction.reply({ 
