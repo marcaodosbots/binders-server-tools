@@ -1,7 +1,6 @@
 const { Events, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionsBitField } = require('discord.js');
 const createEmbed = require('../utils/createEmbed.js');
 
-// Saudações na vibe Geração Z
 const greetings = {
     pt_BR: [
         '<:mencao:1393999045248417924> E aí, ${displayName}!',
