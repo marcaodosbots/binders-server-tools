@@ -6,6 +6,9 @@ const path = require('node:path');
 // carrega o .env pro process.env
 require('dotenv').config();
 
+// puxa e inicia a database (fora da src msm)
+require('./database/db.js');
+
 // instancia o client, definindo os intents
 const client = new Client({ 
     intents: [

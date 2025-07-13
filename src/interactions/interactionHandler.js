@@ -9,7 +9,7 @@ module.exports = {
 
         // responde com a msg do suporte
         await interaction.reply({
-            content: '<:support:1393820810434576434> estamos deixando as coisas mais incríveis! entre no nosso [servidor de suporte](https://discord.gg/Y2jJadbUmY) e descubra, ao vivo, o que tá rolando!',
+            content: '<:support:1393820810434576434> Estamos deixando as coisas mais incríveis! Entre no nosso [servidor de suporte](https://discord.gg/Y2jJadbUmY) e descubra, ao vivo, o que tá rolando!',
             ephemeral: true // só o user vê
         });
     }
