@@ -15,7 +15,7 @@ const client = new Client({
     ] 
 });
 
-// --- CARREGADOR DE COMANDOS ---
+// --- carregador de comandos ---
 client.commands = new Collection();
 const commandsPath = path.join(__dirname, 'src', 'commands');
 const commandFolders = fs.readdirSync(commandsPath);
@@ -28,19 +28,18 @@ for (const folder of commandFolders) {
         if ('data' in command && 'execute' in command) {
             client.commands.set(command.data.name, command);
         } else {
-            console.log(`[AVISO] o comando em ${filePath} ta zuado, faltando 'data' ou 'execute'.`);
+            console.log(`[aviso] o comando em ${filePath} tá zuado, faltando 'data' ou 'execute'.`);
         }
     }
 }
 
-// --- CARREGADOR DE EVENTOS (EVENT HANDLER) ---
+// --- carregador de eventos ---
 const eventsPath = path.join(__dirname, 'src', 'events');
 const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
 
 for (const file of eventFiles) {
     const filePath = path.join(eventsPath, file);
     const event = require(filePath);
-    // checa se o evento deve rodar só uma vez (once) ou sempre (on)
     if (event.once) {
         client.once(event.name, (...args) => event.execute(...args, client));
     } else {
@@ -48,6 +47,24 @@ for (const file of eventFiles) {
     }
 }
 
+// --- carregador de interações tipo botão, menu etc ---
+const interactionsPath = path.join(__dirname, 'src', 'interactions');
+const interactionFiles = fs.readdirSync(interactionsPath).filter(file => file.endsWith('.js'));
+
+for (const file of interactionFiles) {
+    const filePath = path.join(interactionsPath, file);
+    const interaction = require(filePath);
+
+    if (interaction.name === 'interactionCreate' && typeof interaction.execute === 'function') {
+        client.on('interactionCreate', async (i) => {
+            try {
+                await interaction.execute(i, client);
+            } catch (err) {
+                console.error('deu ruim na interação:', err);
+            }
+        });
+    }
+}
 
 // liga o bot
 client.login(process.env.DISCORD_TOKEN);
