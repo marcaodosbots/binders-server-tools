@@ -6,8 +6,13 @@ const path = require('node:path');
 // carrega o .env pro process.env
 require('dotenv').config();
 
-// instancia o client, definindo os intents basicos
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+// instancia o client, definindo os intents
+const client = new Client({ 
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers, 
+    ] 
+});
 
 // --- CARREGADOR DE COMANDOS ---
 client.commands = new Collection();
