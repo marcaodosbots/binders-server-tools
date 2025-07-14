@@ -14,8 +14,8 @@ module.exports = {
         const helpEmbed = await createEmbed(interaction, {
             title: lang === 'pt_BR' ? '<:support:1393820810434576434> Em manuntenção!' : '<:support:1393820810434576434> Under maintenance!',
             description: lang === 'pt_BR' 
-                ? '<:support:1393820810434576434> Estamos deixando as coisas mais incríveis! Entre no nosso [servidor de suporte](https://discord.gg/Y2jJadbUmY) e descubra, ao vivo, o que está acontecendo!'
-                : '<:support:1393820810434576434> We\'re making things more awesome! Join our [support server](https://discord.gg/Y2jJadbUmY) and find out, live, what\'s going on!',
+                ? ' Estamos deixando as coisas mais incríveis! Entre no nosso [servidor de suporte](https://discord.gg/Y2jJadbUmY) e descubra, ao vivo, o que está acontecendo!'
+                : ' We\'re making things more awesome! Join our [support server](https://discord.gg/Y2jJadbUmY) and find out, live, what\'s going on!',
         });
 
         return interaction.reply({ 
