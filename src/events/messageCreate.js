@@ -66,7 +66,7 @@ module.exports = {
         };
 
         const row = new ActionRowBuilder().addComponents(
-            new ButtonBuilder().setCustomId('show_help_menu').setLabel(buttonLabels.commands).setEmoji('<:informacao:1393822533454921869>').setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId(`show_help_menu_${message.author.id}`).setLabel(buttonLabels.commands).setEmoji('<:informacao:1393822533454921869>').setStyle(ButtonStyle.Secondary),
             new ButtonBuilder().setLabel(buttonLabels.website).setEmoji('<:internet_:1393819535886258237>').setStyle(ButtonStyle.Link).setURL('https://binders.carrd.co/'),
             new ButtonBuilder().setLabel(buttonLabels.support).setEmoji('<:support:1393820810434576434>').setStyle(ButtonStyle.Link).setURL('https://dsc.gg/bindersdc'),
             new ButtonBuilder().setLabel('Top.gg').setEmoji('<:bot:1393821258851946606>').setStyle(ButtonStyle.Link).setURL('https://top.gg/bot/1310336375261892608/')

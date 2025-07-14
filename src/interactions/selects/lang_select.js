@@ -17,7 +17,7 @@ module.exports = {
 
         const finalEmbed = await createEmbed(interaction, {
             title: `<:salvar:1394090159879753728> ${lang === 'pt_BR' ? 'Configuração Salva!' : 'Settings Saved!'}`,
-            description: lang === 'pt_BR' ? 'Sua preferência de idioma foi salva com sucesso. Tudo pronto!' : 'Your language preference has been successfully saved. All set!',
+            description: lang === 'pt_BR' ? 'Sua preferência de idioma foi salva com sucesso. Tudo pronto! Você pode usar qualquer comando novamente.' : 'Your language preference has been successfully saved. All set! You can run any command again.',
         });
 
         return interaction.update({ embeds: [finalEmbed], components: [] });
