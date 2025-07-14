@@ -1,4 +1,5 @@
 // src/utils/interactionOwnership.js
+const { MessageFlags } = require('discord.js'); // importa a ferramenta nova
 const getLanguage = require('./getLanguage');
 
 // mensagens de erro aleatorias para quando um curioso clica no botão do outro
@@ -18,29 +19,22 @@ const errorMessages = {
         '<:x_:1394185776807546963> Tira a mão! Isso aqui é de outro usuário.'
     ]
 };
-
 async function checkInteractionOwnership(interaction) {
-    // a gente só checa interações que tem um id de usuario no final
     if (!interaction.customId.includes('_')) return true;
-
     const targetUserId = interaction.customId.split('_').pop();
 
-    // se o id de quem clicou for diferente do id 'alvo', ele não é o dono
     if (interaction.user.id !== targetUserId) {
         const lang = getLanguage(interaction);
         const langCode = lang === 'pt_BR' ? 'pt_BR' : 'en_US';
-        
-        // escolhe uma msg de erro aleatoria no idioma certo
         const randomError = errorMessages[langCode][Math.floor(Math.random() * errorMessages[langCode].length)];
-
+        
         await interaction.reply({
             content: randomError,
-            ephemeral: true,
+            flags: [MessageFlags.Ephemeral] // <-- JEITO NOVO E MODERNO
         });
-        return false; // barra a interação
+        return false;
     }
-
-    return true; // se for o dono, libera a passagem
+    return true;
 }
 
 module.exports = checkInteractionOwnership;
