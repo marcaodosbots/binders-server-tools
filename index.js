@@ -1,7 +1,9 @@
-//evitar erros né
+// src/index.js
+
+// o vigia de erros tem q ser a primeira coisa sempre
 require('./src/utils/errorHandler.js')();
-// puxando as paradas que a gente precisa
-const { Client, Collection, GatewayIntentBits } = require('discord.js');
+
+const { Client, Collection, GatewayIntentBits, Partials } = require('discord.js');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -11,43 +13,42 @@ require('dotenv').config();
 // puxa e inicia a database (fora da src msm)
 require('./database/db.js');
 
-// instancia o client, definindo os intents
+// instancia o client, definindo os intents CORRETOS E COMPLETOS
 const client = new Client({ 
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent, 
-    ] 
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.DirectMessages, // <-- O INTENT QUE FALTAVA PRA OUVIR DMS
+    ],
+    partials: [
+        Partials.Channel, // <-- ISSO AQUI VAI FAZER A DM FUNCIONAR DE VEZ
+    ]
 });
 
-// --- carregador de comandos ---
+// --- Carregadores ---
 client.commands = new Collection();
-client.buttons = new Collection(); // para guardar os handlers de botão
-client.selects = new Collection(); // para guardar os handlers de menu
+client.buttons = new Collection();
+client.selects = new Collection();
 
-const commandsPath = path.join(__dirname, 'src', 'commands');
-const commandFolders = fs.readdirSync(commandsPath);
-
+// Carregador de Comandos
+const commandFolders = fs.readdirSync(path.join(__dirname, 'src', 'commands'));
 for (const folder of commandFolders) {
-    const commandFiles = fs.readdirSync(path.join(commandsPath, folder)).filter(file => file.endsWith('.js'));
+    const commandFiles = fs.readdirSync(path.join(__dirname, 'src', 'commands', folder)).filter(file => file.endsWith('.js'));
     for (const file of commandFiles) {
-        const filePath = path.join(commandsPath, folder, file);
-        const command = require(filePath);
+        const command = require(`./src/commands/${folder}/${file}`);
         if ('data' in command && 'execute' in command) {
             client.commands.set(command.data.name, command);
-        } else {
-            console.log(`[aviso] o comando em ${filePath} tá zuado, faltando 'data' ou 'execute'.`);
         }
     }
 }
+console.log(`[CARREGADOR] Carregados ${client.commands.size} comandos.`);
 
-// --- carregador de eventos ---
-const eventsPath = path.join(__dirname, 'src', 'events');
-const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
-
+// Carregador de Eventos
+const eventFiles = fs.readdirSync(path.join(__dirname, 'src', 'events')).filter(file => file.endsWith('.js'));
 for (const file of eventFiles) {
-    const filePath = path.join(eventsPath, file);
-    const event = require(filePath);
+    const event = require(`./src/events/${file}`);
     if (event.once) {
         client.once(event.name, (...args) => event.execute(...args, client));
     } else {
@@ -55,29 +56,21 @@ for (const file of eventFiles) {
     }
 }
 
-// liga o bot
-client.login(process.env.DISCORD_TOKEN);
-
-// --- CARREGADOR DE BOTÕES ---
-const buttonsPath = path.join(__dirname, 'src', 'interactions', 'buttons');
-const buttonFiles = fs.readdirSync(buttonsPath).filter(file => file.endsWith('.js'));
-
+// Carregador de Botões
+const buttonFiles = fs.readdirSync(path.join(__dirname, 'src', 'interactions', 'buttons')).filter(file => file.endsWith('.js'));
 for (const file of buttonFiles) {
-    const filePath = path.join(buttonsPath, file);
-    const button = require(filePath);
+    const button = require(`./src/interactions/buttons/${file}`);
     client.buttons.set(button.name, button);
 }
-// LINHA NOVA AQUI:
 console.log(`[CARREGADOR] Carregados ${client.buttons.size} handlers de botão.`);
 
-// --- CARREGADOR DE MENUS DE SELEÇÃO ---
-const selectsPath = path.join(__dirname, 'src', 'interactions', 'selects');
-const selectFiles = fs.readdirSync(selectsPath).filter(file => file.endsWith('.js'));
-
+// Carregador de Menus de Seleção
+const selectFiles = fs.readdirSync(path.join(__dirname, 'src', 'interactions', 'selects')).filter(file => file.endsWith('.js'));
 for (const file of selectFiles) {
-    const filePath = path.join(selectsPath, file);
-    const select = require(filePath);
+    const select = require(`./src/interactions/selects/${file}`);
     client.selects.set(select.name, select);
 }
-// LINHA NOVA AQUI:
 console.log(`[CARREGADOR] Carregados ${client.selects.size} handlers de menu.`);
+
+// liga o bot
+client.login(process.env.DISCORD_TOKEN);
