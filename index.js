@@ -20,6 +20,9 @@ const client = new Client({
 
 // --- carregador de comandos ---
 client.commands = new Collection();
+client.buttons = new Collection(); // para guardar os handlers de botão
+client.selects = new Collection(); // para guardar os handlers de menu
+
 const commandsPath = path.join(__dirname, 'src', 'commands');
 const commandFolders = fs.readdirSync(commandsPath);
 
@@ -52,3 +55,24 @@ for (const file of eventFiles) {
 
 // liga o bot
 client.login(process.env.DISCORD_TOKEN);
+
+// --- CARREGADOR DE BOTÕES ---
+const buttonsPath = path.join(__dirname, 'src', 'interactions', 'buttons');
+const buttonFiles = fs.readdirSync(buttonsPath).filter(file => file.endsWith('.js'));
+
+for (const file of buttonFiles) {
+    const filePath = path.join(buttonsPath, file);
+    const button = require(filePath);
+    // a chave vai ser o nome do arquivo (ex: 'tos_accept')
+    client.buttons.set(button.name, button);
+}
+
+// --- CARREGADOR DE MENUS DE SELEÇÃO ---
+const selectsPath = path.join(__dirname, 'src', 'interactions', 'selects');
+const selectFiles = fs.readdirSync(selectsPath).filter(file => file.endsWith('.js'));
+
+for (const file of selectFiles) {
+    const filePath = path.join(selectsPath, file);
+    const select = require(filePath);
+    client.selects.set(select.name, select);
+}

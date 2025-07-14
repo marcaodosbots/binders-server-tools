@@ -1,0 +1,7 @@
+module.exports = {
+    name: 'show_help_menu', // o customId exato do botão
+    async execute(interaction) {
+        // A lógica do 'tosCheck' já vai ter rodado antes de chegar aqui
+        return interaction.reply({ content: 'Aqui será exibida a lista de comandos! (Ainda em construção)', ephemeral: true });
+    }
+};

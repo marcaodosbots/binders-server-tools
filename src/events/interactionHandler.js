@@ -1,68 +1,52 @@
-// src/events/interactionCreate.js
 const { Events } = require('discord.js');
 const tosCheck = require('../utils/tosCheck.js');
-const { updateUser } = require('../../database/db.js');
-const { currentTosVersion } = require('../config/config.js');
-const handleNoCommand = require('./no_command.js');
 
 module.exports = {
     name: Events.InteractionCreate,
     once: false,
-    
     async execute(interaction, client) {
-        // --- Porteiro dos Termos de Serviço ---
-        // a gente checa os termos antes de fazer QUALQUER outra coisa
-        // mas a gente ignora a checagem pro proprio botão de aceitar os termos
-        if (interaction.customId !== `tos_accept_${interaction.user.id}`) {
+        // o porteiro continua aqui, checando tudo antes de mais nada
+        // a gente ignora a checagem se o clique for em um dos nossos botões/menus internos
+        const bypassIds = ['tos_accept', 'lang_select'];
+        if (!bypassIds.some(id => interaction.customId?.startsWith(id))) {
             const canProceed = await tosCheck(interaction);
-            if (!canProceed) return; // se o porteiro barrou, para tudo aqui
+            if (!canProceed) return;
         }
 
-        // --- Lógica para Comandos de Barra (Slash Commands) ---
+        // Roteador de Comandos de Barra
         if (interaction.isChatInputCommand()) {
             const command = client.commands.get(interaction.commandName);
-            if (!command) {
-                console.error(`Comando não encontrado: ${interaction.commandName}`);
-                return handleNoCommand.execute(interaction);
-            }
+            if (!command) return;
             try {
                 await command.execute(interaction, client);
             } catch (error) {
-                console.error(`Erro executando o comando ${interaction.commandName}:`, error);
-                await interaction.reply({ content: 'Deu um erro ao executar esse comando!', ephemeral: true });
+                console.error(`Erro no comando ${interaction.commandName}:`, error);
             }
             return;
         }
 
-        // --- Lógica para Botões ---
+        // Roteador de Botões
         if (interaction.isButton()) {
-            // checa se é o nosso botão de aceitar os termos
-            if (interaction.customId === `tos_accept_${interaction.user.id}`) {
-                // a checagem pra ver se o botão é do usuário certo já está no tosCheck
-                // então aqui a gente só atualiza
-                updateUser(interaction.user.id, 'tosVersion', currentTosVersion);
-                
-                // aqui virá a lógica da seleção de idioma no futuro
-                await interaction.update({
-                    content: '✅ Termos aceitos com sucesso! Agora você pode usar o comando que tentou originalmente.',
-                    embeds: [],
-                    components: [],
-                });
+            // encontra o especialista cujo nome começa com o customId do botão
+            const buttonHandler = client.buttons.find(button => interaction.customId.startsWith(button.name));
+            if (!buttonHandler) return;
+            try {
+                await buttonHandler.execute(interaction, client);
+            } catch (error) {
+                console.error(`Erro no botão ${interaction.customId}:`, error);
             }
+            return;
+        }
 
-            // se o botão for o de 'veja meus comandos' da menção...
-            if (interaction.customId === 'show_help_menu') {
-                // AQUI virá a lógica para mostrar o menu de ajuda
-                await interaction.reply({
-                    content: 'Aqui será exibida a lista de comandos! (Ainda em construção)',
-                    ephemeral: true,
-                });
+        // Roteador de Menus de Seleção
+        if (interaction.isStringSelectMenu()) {
+            const selectHandler = client.selects.find(select => interaction.customId.startsWith(select.name));
+            if (!selectHandler) return;
+            try {
+                await selectHandler.execute(interaction, client);
+            } catch (error) {
+                console.error(`Erro no menu ${interaction.customId}:`, error);
             }
         }
-        
-        // --- Lógica para Menus de Seleção (Select Menus) ---
-        // if (interaction.isStringSelectMenu()) {
-        //     // aqui virá a lógica para o menu de seleção de linguas
-        // }
     },
 };
