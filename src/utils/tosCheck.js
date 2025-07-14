@@ -1,7 +1,7 @@
 // src/utils/tosCheck.js
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { getUser } = require('../../database/db.js');
-const { currentTosVersion } = require('../config/config.js');
+const { currentTosVersion } = require('../config/config.js'); // <-- CAMINHO CORRIGIDO
 const createEmbed = require('./createEmbed.js');
 
 async function tosCheck(interaction) {
@@ -14,49 +14,16 @@ async function tosCheck(interaction) {
     const isFirstTime = user.tosVersion === 0;
     const isPtBr = interaction.locale === 'pt-BR';
     
-    // a criação do embed e dos botões continua igual
-    const embed = await createEmbed(interaction, {
-        title: `<:novato:1394085774567276614> Termos de Serviço e Política de Privacidade`,
-        description: isFirstTime
-            ? (isPtBr ? 'Bem-vindo(a)! Para usar minhas funções, você precisa concordar com nossos Termos de Serviço e Política de Privacidade.' : 'Welcome! To use my functions, you need to agree to our Terms of Service and Privacy Policy.')
-            : (isPtBr ? 'Nossos Termos de Serviço foram atualizados! Por favor, leia e aceite a nova versão.' : 'Our Terms of Service have been updated! Please read and accept the new version.'),
+    const embed = await createEmbed(interaction, { /* ...código do embed... */ });
+    const buttons = new ActionRowBuilder().addComponents( /* ...código dos botões... */ );
+    
+    await interaction.reply({
+        embeds: [embed],
+        components: [buttons],
+        ephemeral: true,
     });
 
-    const buttons = new ActionRowBuilder()
-        .addComponents(
-            new ButtonBuilder()
-                .setCustomId(`tos_accept_${interaction.user.id}`)
-                .setLabel(isPtBr ? 'Aceitar e Continuar' : 'Accept and Continue')
-                .setEmoji('<:confere:1394116085279883274>')
-                .setStyle(ButtonStyle.Success),
-            new ButtonBuilder()
-                .setLabel(isPtBr ? 'Termos de Serviço' : 'Terms of Service')
-                .setStyle(ButtonStyle.Link)
-                .setURL('https://binders.carrd.co/#politicas'),
-            new ButtonBuilder()
-                .setLabel(isPtBr ? 'Política de Privacidade' : 'Privacy Policy')
-                .setStyle(ButtonStyle.Link)
-                .setURL('https://binders.carrd.co/#politicas')
-        );
-    
-    // --- LÓGICA DE RESPOSTA INTELIGENTE ---
-    // se a interação veio de um clique no botão...
-    if (interaction.isButton()) {
-        // ...a gente EDITA a mensagem original com .update() para o fluxo ficar fluido
-        await interaction.update({
-            embeds: [embed],
-            components: [buttons],
-        });
-    } else {
-        // se veio de um comando de barra, a gente RESPONDE com .reply()
-        await interaction.reply({
-            embeds: [embed],
-            components: [buttons],
-            ephemeral: true, // importante pra só o usuário ver
-        });
-    }
-
-    return false; // barra o comando original
+    return false;
 }
-
+// Cole o código completo que já fizemos para essa função. A única mudança é na linha 4.
 module.exports = tosCheck;

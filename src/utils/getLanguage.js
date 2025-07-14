@@ -1,5 +1,5 @@
 // src/utils/getLanguage.js
-const { getUser } = require('../../database/db.js'); // <-- CAMINHO CORRIGIDO
+const { getUser } = require('../../database/db.js');
 
 function getLanguage(context) {
     const userId = context.user ? context.user.id : context.author.id;

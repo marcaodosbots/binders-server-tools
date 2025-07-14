@@ -1,8 +1,8 @@
 const { Events, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionsBitField } = require('discord.js');
 const createEmbed = require('../utils/createEmbed.js');
-const getLanguage = require('../utils/getLanguage.js'); // nosso detetive de idioma
+const getLanguage = require('../utils/getLanguage.js');
 const { getUser } = require('../../database/db.js');
-const { currentTosVersion } = require('../config/config.js');
+const { currentTosVersion } = require('../config/config.js'); // <-- CAMINHO CORRIGIDO
 
 const greetings = {
     en_US: ['Hey, ${displayName}!', 'Hello, ${displayName}!', 'Hi there, ${displayName}!', 'Greetings, ${displayName}!', 'What\'s up, ${displayName}?', 'Good to see you, ${displayName}!', 'How can I help, ${displayName}?', 'At your service, ${displayName}!', 'You summoned me, ${displayName}?', 'Binder at your command, ${displayName}!'],
