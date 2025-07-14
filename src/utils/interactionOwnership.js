@@ -2,6 +2,7 @@
 const { MessageFlags } = require('discord.js');
 const getLanguage = require('./getLanguage');
 
+// agora com as duas listas de mensagens completas
 const errorMessages = {
     pt_BR: [
         '<:x_:1394185776807546963> Seu inxerido! Esse botão não é pra você!',
@@ -10,11 +11,17 @@ const errorMessages = {
         '<:x_:1394185776807546963> Tira a mão! Isso aqui é de outro usuário.',
         '<:x_:1394185776807546963> Cada um no seu quadrado, esse botão não é seu.'
     ],
-    // adicione as mensagens em en_US aqui depois
+    en_US: [
+        '<:x_:1394185776807546963> Hey, meddler! This button isn\'t for you!',
+        '<:x_:1394185776807546963> Whoa there! This is a private interaction.',
+        '<:x_:1394185776807546963> Meddling... This button doesn\'t belong to you.',
+        '<:x_:1394185776807546963> Hands off! This one is for someone else.',
+        '<:x_:1394185776807546963> Not your button, not your business.'
+    ]
 };
 
 async function checkInteractionOwnership(interaction) {
-    // AQUI A CORREÇÃO: se o ID não tem '_', a gente assume q é um botão público
+    // se o ID não tem '_', a gente assume q é um botão público
     if (!interaction.customId.includes('_')) {
         return true; // libera a passagem
     }
@@ -26,6 +33,7 @@ async function checkInteractionOwnership(interaction) {
         const lang = getLanguage(interaction);
         const langCode = lang === 'pt_BR' ? 'pt_BR' : 'en_US';
         
+        // escolhe uma msg de erro aleatoria no idioma certo
         const randomError = errorMessages[langCode][Math.floor(Math.random() * errorMessages[langCode].length)];
 
         await interaction.reply({
