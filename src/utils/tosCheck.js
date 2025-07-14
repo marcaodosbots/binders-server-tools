@@ -7,45 +7,45 @@ const createEmbed = require('./createEmbed.js');
 async function tosCheck(interaction) {
     const user = getUser(interaction.user.id);
 
-    // se a versão dos termos do usuário for igual ou maior q a versão atual, ta liberado
     if (user.tosVersion >= currentTosVersion) {
-        return true; // retorna 'true' para o comando continuar
+        return true;
     }
 
-    // se chegou aqui, o usuário precisa aceitar os termos
     const isFirstTime = user.tosVersion === 0;
+    const isPtBr = interaction.locale === 'pt-BR';
     
     const embed = await createEmbed(interaction, {
         title: `<:novato:1394085774567276614> Termos de Serviço e Política de Privacidade`,
         description: isFirstTime
-            ? 'Bem-vindo(a)! Para usar minhas funções, você precisa concordar com nossos Termos de Serviço e Política de Privacidade. Isso garante um ambiente seguro e transparente para todos.'
-            : 'Nossos Termos de Serviço foram atualizados! Para continuar usando minhas funções, por favor, leia e aceite a nova versão.',
+            ? (isPtBr ? 'Bem-vindo(a)! Para usar minhas funções, você precisa concordar com nossos Termos de Serviço e Política de Privacidade.' : 'Welcome! To use my functions, you need to agree to our Terms of Service and Privacy Policy.')
+            : (isPtBr ? 'Nossos Termos de Serviço foram atualizados! Por favor, leia e aceite a nova versão.' : 'Our Terms of Service have been updated! Please read and accept the new version.'),
     });
 
     const buttons = new ActionRowBuilder()
         .addComponents(
             new ButtonBuilder()
-                .setCustomId(`tos_accept_${interaction.user.id}`) // id unico pra evitar confusão
-                .setLabel('Aceitar e Continuar')
+                .setCustomId(`tos_accept_${interaction.user.id}`)
+                .setLabel(isPtBr ? 'Aceitar e Continuar' : 'Accept and Continue')
                 .setEmoji('<:confere:1394116085279883274>')
-                .setStyle(ButtonStyle.Primary),
+                .setStyle(ButtonStyle.Success),
             new ButtonBuilder()
-                .setLabel('Termos de Serviço')
+                .setLabel(isPtBr ? 'Termos de Serviço' : 'Terms of Service')
                 .setStyle(ButtonStyle.Link)
-                .setURL('https://binders.carrd.co/#politicas'), // LINK PARA SEUS TERMOS
+                .setURL('https://binders.carrd.co/#politicas'),
             new ButtonBuilder()
-                .setLabel('Política de Privacidade')
+                .setLabel(isPtBr ? 'Política de Privacidade' : 'Privacy Policy')
                 .setStyle(ButtonStyle.Link)
-                .setURL('https://binders.carrd.co/#politicas') // LINK PARA SUA POLITICA
+                .setURL('https://binders.carrd.co/#politicas')
         );
     
-    await interaction.reply({
+    // AQUI A MUDANÇA: trocamos .reply() por .update()
+    // Isso vai editar a mensagem original em vez de responder
+    await interaction.update({
         embeds: [embed],
         components: [buttons],
-        ephemeral: true,
     });
 
-    return false; // retorna 'false' para barrar o comando original
+    return false; // barra o comando original
 }
 
 module.exports = tosCheck;

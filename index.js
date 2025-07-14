@@ -63,9 +63,10 @@ const buttonFiles = fs.readdirSync(buttonsPath).filter(file => file.endsWith('.j
 for (const file of buttonFiles) {
     const filePath = path.join(buttonsPath, file);
     const button = require(filePath);
-    // a chave vai ser o nome do arquivo (ex: 'tos_accept')
     client.buttons.set(button.name, button);
 }
+// LINHA NOVA AQUI:
+console.log(`[CARREGADOR] Carregados ${client.buttons.size} handlers de botão.`);
 
 // --- CARREGADOR DE MENUS DE SELEÇÃO ---
 const selectsPath = path.join(__dirname, 'src', 'interactions', 'selects');
@@ -76,3 +77,5 @@ for (const file of selectFiles) {
     const select = require(filePath);
     client.selects.set(select.name, select);
 }
+// LINHA NOVA AQUI:
+console.log(`[CARREGADOR] Carregados ${client.selects.size} handlers de menu.`);
