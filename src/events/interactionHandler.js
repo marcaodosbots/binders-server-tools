@@ -8,40 +8,49 @@ module.exports = {
     once: false,
     async execute(interaction, client) {
         
-        // --- Roteador para Comandos de Barra (/) ---
+        // --- ROTEADOR PRA COMANDO DE BARRA (/) ---
         if (interaction.isChatInputCommand()) {
-            // A verificação de dono NÃO acontece aqui. Só a de termos.
+            // primeiro de tudo, checa se o user ja aceitou os termos
             const canProceed = await tosCheck(interaction);
             if (!canProceed) return; 
 
             const command = client.commands.get(interaction.commandName);
+            // se o comando n existe na nossa collection, chama o handler de erro
             if (!command) {
                 return handleNoCommand.execute(interaction);
             }
             try {
                 await command.execute(interaction, client);
-            } catch (error) { console.error(`Erro no comando ${interaction.commandName}:`, error); }
+            } catch (error) { 
+                console.error(`deu pau no comando ${interaction.commandName}:`, error);
+            }
             return;
         }
 
-        // --- Roteador para Botões e Menus ---
+        // --- ROTEADOR PRA BOTAO E MENU ---
         if (interaction.isButton() || interaction.isStringSelectMenu()) {
-            // A verificação de dono SÓ acontece para componentes.
+            // checa se o curioso ta clicando no botao dos outros
             const isOwner = await checkInteractionOwnership(interaction);
-            if (!isOwner) return; // Se o segurança barrar o curioso, para aqui.
+            if (!isOwner) return;
 
+            // descobre se é pra procurar na gaveta de botão ou de menu
             const handlerCollection = interaction.isButton() ? client.buttons : client.selects;
             const handler = handlerCollection.find(h => interaction.customId.startsWith(h.name));
             
+            // se n achou um handler de arquivo, ve se é o caso especial do start_tos
             if (!handler) {
                 if (interaction.customId.startsWith('start_tos')) {
                     return tosCheck(interaction);
                 }
-                return console.error(`Handler não encontrado para: ${interaction.customId}`);
+                return console.error(`handler nao encontrado pra: ${interaction.customId}`);
             }
+
+            // se achou o handler, executa ele
             try {
                 await handler.execute(interaction, client);
-            } catch (error) { console.error(`Erro na interação ${interaction.customId}:`, error); }
+            } catch (error) { 
+                console.error(`deu pau na interação ${interaction.customId}:`, error); 
+            }
         }
     },
 };

@@ -4,42 +4,42 @@ const Database = require('better-sqlite3');
 const path = require('node:path');
 const fs = require('node:fs');
 
-// --- CRIAÇÃO E CONEXÃO COM O DB ---
+// --- conexão com o db ---
 const dbPath = path.join(__dirname, 'main.db');
-const db = new Database(dbPath); // não precisa do verbose no dia a dia
+const db = new Database(dbPath);
 
-// --- SISTEMA DE BACKUP ---
+// --- statements preparados ---
+// pra n ficar preparando a mesma query toda hora, a gente prepara uma vez só aqui.
+// fica bem mais rapido.
+const selectUser = db.prepare('SELECT * FROM users WHERE userId = ?');
+const insertUser = db.prepare('INSERT INTO users (userId) VALUES (?)');
+
+
 function createDailyBackup() {
     const backupDir = path.join(__dirname, 'backups');
 
-    // se a pasta de backups n existir, cria ela
+    // cria a pasta de backup se n existir
     if (!fs.existsSync(backupDir)) {
         fs.mkdirSync(backupDir);
-        console.log('[Backup] Pasta de backups criada.');
+        console.log('[db] pasta de backups criada.');
     }
 
-    // pega a data de hoje no formato YYYY-MM-DD
     const today = new Date().toISOString().slice(0, 10);
     const backupFilePath = path.join(backupDir, `backup-${today}.db`);
 
-    // checa se o backup de hoje já foi feito
+    // só faz o backup se o de hoje ainda n foi feito
     if (!fs.existsSync(backupFilePath)) {
-        // copia o arquivo do db principal para o arquivo de backup
         db.backup(backupFilePath)
-            .then(() => console.log(`[Backup] Backup do dia ${today} criado com sucesso.`))
-            .catch((err) => console.error('[Backup] Falha ao criar backup:', err));
-    } else {
-        // essa msg n precisa aparecer toda hora, só se quiser debugar
-        // console.log(`[Backup] O backup de hoje (${today}) já existe.`);
+            .then(() => console.log(`[db] backup do dia ${today} feito.`))
+            .catch((err) => console.error('[db] falha no backup:', err));
     }
 }
 
-// --- INICIALIZAÇÃO DAS TABELAS ---
 function initializeDatabase() {
-    console.log('[Database] Iniciando a verificação do banco de dados...');
-    createDailyBackup(); // roda a função de backup toda vez q o bot liga
+    console.log('[db] verificando estrutura do banco de dados...');
+    createDailyBackup();
 
-    // Usamos .exec() pra rodar múltiplos comandos de uma vez
+    // cria as tabelas se elas n existirem. o .exec roda tudo de uma vez
     const createTablesStmt = `
         CREATE TABLE IF NOT EXISTS users (
             userId TEXT PRIMARY KEY,
@@ -62,32 +62,32 @@ function initializeDatabase() {
             timestamp INTEGER NOT NULL
         );
     `;
-    
     db.exec(createTablesStmt);
 
-    console.log('[Database] Estrutura de tabelas verificada e pronta.');
+    console.log('[db] tabelas prontas.');
 }
 
-// Já chama a função principal pra preparar tudo
+// prepara o db assim que o bot liga
 initializeDatabase();
 
-// --- FUNÇÕES GERENTES ---
 
-// função pra pegar um usuário do db. se ele n existir, a gente cria um registro padrão pra ele.
+// --- funções 'gerente' ---
+
+// pego o user. se n achar, crio um registro novo pra ele com os defaults da tabela.
 function getUser(userId) {
-    let user = db.prepare('SELECT * FROM users WHERE userId = ?').get(userId);
+    let user = selectUser.get(userId);
     if (!user) {
-        db.prepare('INSERT INTO users (userId) VALUES (?)').run(userId);
-        user = db.prepare('SELECT * FROM users WHERE userId = ?').get(userId);
+        insertUser.run(userId);
+        user = selectUser.get(userId);
     }
     return user;
 }
 
-// função pra atualizar os dados de um usuário
+// função genérica pra dar update na coluna de um user.
 function updateUser(userId, column, value) {
-    // a gente usa 'run' pra comandos que não retornam dados (INSERT, UPDATE, DELETE)
+    // aqui tem q preparar toda vez pq o nome da coluna é dinamico.
     db.prepare(`UPDATE users SET ${column} = ? WHERE userId = ?`).run(value, userId);
 }
 
-// a gente exporta as funções junto com a conexão principal
+
 module.exports = { db, getUser, updateUser };
