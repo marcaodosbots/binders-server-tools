@@ -7,39 +7,47 @@ module.exports = {
     once: false,
     async execute(interaction, client) {
         
-        if (interaction.isChatInputCommand()) {
-            // 1º - O PORTEIRO CHECA OS TERMOS, SEMPRE.
+        // --- Porteiro dos Termos de Serviço ---
+        // lista de IDs que fazem parte do fluxo de configuração e não devem ser checados de novo
+        const bypassTosCheck = ['tos_accept', 'lang_select'];
+        const isBypassInteraction = bypassTosCheck.some(id => interaction.customId?.startsWith(id));
+
+        // se a interação NÃO for uma da lista de bypass, a gente chama o porteiro
+        if (!isBypassInteraction) {
             const canProceed = await tosCheck(interaction);
-            if (!canProceed) return; // Se o porteiro barrar, para tudo aqui.
+            if (!canProceed) return; // se o porteiro barrar, para tudo aqui
+        }
 
-            // 2º - SE PASSOU, A GENTE PROCURA O COMANDO.
+        // --- Roteador Principal ---
+        
+        if (interaction.isChatInputCommand()) {
             const command = client.commands.get(interaction.commandName);
-
             if (!command) {
-                // 3º - SE O COMANDO NÃO EXISTE, A GENTE CHAMA O AJUDANTE.
                 console.error(`Comando não encontrado: ${interaction.commandName}`);
                 return handleNoCommand.execute(interaction);
             }
 
-            // 4º - SE O COMANDO EXISTE, A GENTE EXECUTA.
             try {
                 await command.execute(interaction, client);
             } catch (error) {
-                console.error(`Erro no comando ${interaction.commandName}:`, error);
+                console.error(`Erro executando o comando ${interaction.commandName}:`, error);
+                // em um caso real, vc pode mandar um embed de erro aqui
             }
             return;
         }
 
         if (interaction.isButton()) {
+            // caso especial para o botão que inicia o fluxo, ele chama o porteiro de novo
             if (interaction.customId.startsWith('start_tos')) {
                 return tosCheck(interaction);
             }
-            
-            const canProceed = await tosCheck(interaction);
-            if (!canProceed) return;
 
+            // para os outros botões, ele procura o handler especialista
             const buttonHandler = client.buttons.find(button => interaction.customId.startsWith(button.name));
-            if (!buttonHandler) return console.error(`Handler de botão não encontrado para: ${interaction.customId}`);
+            if (!buttonHandler) {
+                console.error(`Handler de botão não encontrado para: ${interaction.customId}`);
+                return;
+            }
             
             try {
                 await buttonHandler.execute(interaction, client);
@@ -50,8 +58,13 @@ module.exports = {
         }
 
         if (interaction.isStringSelectMenu()) {
+            // menus não precisam de checagem de termos pq só aparecem depois de aceitar
             const selectHandler = client.selects.find(select => interaction.customId.startsWith(select.name));
-            if (!selectHandler) return console.error(`Handler de menu não encontrado para: ${interaction.customId}`);
+            if (!selectHandler) {
+                console.error(`Handler de menu não encontrado para: ${interaction.customId}`);
+                return;
+            }
+            
             try {
                 await selectHandler.execute(interaction, client);
             } catch (error) {

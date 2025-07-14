@@ -1,3 +1,5 @@
+//evitar erros né
+require('./src/utils/errorHandler.js')();
 // puxando as paradas que a gente precisa
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const fs = require('node:fs');
