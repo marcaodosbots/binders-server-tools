@@ -50,24 +50,5 @@ for (const file of eventFiles) {
     }
 }
 
-// --- carregador de interações tipo botão, menu etc ---
-const interactionsPath = path.join(__dirname, 'src', 'interactions');
-const interactionFiles = fs.readdirSync(interactionsPath).filter(file => file.endsWith('.js'));
-
-for (const file of interactionFiles) {
-    const filePath = path.join(interactionsPath, file);
-    const interaction = require(filePath);
-
-    if (interaction.name === 'interactionCreate' && typeof interaction.execute === 'function') {
-        client.on('interactionCreate', async (i) => {
-            try {
-                await interaction.execute(i, client);
-            } catch (err) {
-                console.error('deu ruim na interação:', err);
-            }
-        });
-    }
-}
-
 // liga o bot
 client.login(process.env.DISCORD_TOKEN);

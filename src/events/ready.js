@@ -44,6 +44,7 @@ let statusList = [
     '🎶 "Jogado aos teus pés, com mil rosas roubadas, exageradooo" - Binder',
     '💭 "Eu posso mandar um KKKK sem rir, mas nunca um bom dia sem ter acordado" - @towrns',
     '🚪🚶‍♀️ "af, tchau" - Xolofoni',
+    '⚽ "SIUUUUUUUUUUUU" - Mary',
     '❓ Use o /ajuda!'
 ];
 */

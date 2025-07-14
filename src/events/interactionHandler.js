@@ -1,36 +1,68 @@
+// src/events/interactionCreate.js
 const { Events } = require('discord.js');
-
-// aqui a gente 'importa' nosso novo ajudante de comando não encontrado
+const tosCheck = require('../utils/tosCheck.js');
+const { updateUser } = require('../../database/db.js');
+const { currentTosVersion } = require('../config/config.js');
 const handleNoCommand = require('./no_command.js');
 
 module.exports = {
-    name: Events.InteractionCreate, // o nome do evento que a gente ta ouvindo
-    once: false, // 'false' pq a gente quer ouvir todas as interações, não só a primeira
+    name: Events.InteractionCreate,
+    once: false,
     
     async execute(interaction, client) {
-        // ignora tudo q n for slash command (botões, menus, etc. a gente ve depois)
-        if (!interaction.isChatInputCommand()) return;
-
-        // busca o comando na collection que ta no client
-        const command = client.commands.get(interaction.commandName);
-
-        // se o comando não existir na nossa collection...
-        if (!command) {
-            console.error(`Comando não encontrado: ${interaction.commandName}`);
-            // ...a gente chama nosso ajudante pra mandar a resposta!
-            return handleNoCommand.execute(interaction);
+        // --- Porteiro dos Termos de Serviço ---
+        // a gente checa os termos antes de fazer QUALQUER outra coisa
+        // mas a gente ignora a checagem pro proprio botão de aceitar os termos
+        if (interaction.customId !== `tos_accept_${interaction.user.id}`) {
+            const canProceed = await tosCheck(interaction);
+            if (!canProceed) return; // se o porteiro barrou, para tudo aqui
         }
 
-        // se achou o comando, tenta executar
-        try {
-            await command.execute(interaction, client);
-        } catch (error) {
-            console.error(error);
-            if (interaction.replied || interaction.deferred) {
-                await interaction.followUp({ content: 'Deu um erro ao executar esse comando!', ephemeral: true });
-            } else {
+        // --- Lógica para Comandos de Barra (Slash Commands) ---
+        if (interaction.isChatInputCommand()) {
+            const command = client.commands.get(interaction.commandName);
+            if (!command) {
+                console.error(`Comando não encontrado: ${interaction.commandName}`);
+                return handleNoCommand.execute(interaction);
+            }
+            try {
+                await command.execute(interaction, client);
+            } catch (error) {
+                console.error(`Erro executando o comando ${interaction.commandName}:`, error);
                 await interaction.reply({ content: 'Deu um erro ao executar esse comando!', ephemeral: true });
             }
+            return;
         }
+
+        // --- Lógica para Botões ---
+        if (interaction.isButton()) {
+            // checa se é o nosso botão de aceitar os termos
+            if (interaction.customId === `tos_accept_${interaction.user.id}`) {
+                // a checagem pra ver se o botão é do usuário certo já está no tosCheck
+                // então aqui a gente só atualiza
+                updateUser(interaction.user.id, 'tosVersion', currentTosVersion);
+                
+                // aqui virá a lógica da seleção de idioma no futuro
+                await interaction.update({
+                    content: '✅ Termos aceitos com sucesso! Agora você pode usar o comando que tentou originalmente.',
+                    embeds: [],
+                    components: [],
+                });
+            }
+
+            // se o botão for o de 'veja meus comandos' da menção...
+            if (interaction.customId === 'show_help_menu') {
+                // AQUI virá a lógica para mostrar o menu de ajuda
+                await interaction.reply({
+                    content: 'Aqui será exibida a lista de comandos! (Ainda em construção)',
+                    ephemeral: true,
+                });
+            }
+        }
+        
+        // --- Lógica para Menus de Seleção (Select Menus) ---
+        // if (interaction.isStringSelectMenu()) {
+        //     // aqui virá a lógica para o menu de seleção de linguas
+        // }
     },
 };

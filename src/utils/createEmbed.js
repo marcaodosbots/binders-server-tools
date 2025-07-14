@@ -1,10 +1,8 @@
 const { EmbedBuilder } = require('discord.js');
 
-// nossa 'fábrica' de embeds, agora mais inteligente
-// 'context' pode ser tanto uma 'interaction' quanto uma 'message'
+// nossa 'fábrica' de embeds, agora com a lógica corrigida
 async function createEmbed(context, options = {}) {
     
-    // os valores padrao agora moram aqui dentro
     const defaultConfig = {
         color: '#9F9AAF',
     };
@@ -12,7 +10,9 @@ async function createEmbed(context, options = {}) {
     const embedConfig = { ...defaultConfig, ...options };
 
     // --- Lógica para descobrir quem é o usuário e o cliente ---
-    const userSource = context.user ? context : context.author;
+    // AQUI ESTAVA O BUG. agora está corrigido.
+    // a fonte do usuario é o 'context.user' OU o 'context.author'
+    const userSource = context.user || context.author;
     const clientUser = context.client.user;
 
     const targetUser = options.targetUser || userSource;
@@ -26,14 +26,12 @@ async function createEmbed(context, options = {}) {
             name: `${displayName} | @${targetUser.tag}`,
             iconURL: targetUser.displayAvatarURL(),
         })
-        // AQUI A MUDANÇA QUE VOCÊ PEDIU
         .setFooter({
             text: `${context.guild.name} - ${clientUser.displayName}`,
-            iconURL: context.guild.iconURL(), // pega o icone do servidor dinamicamente
+            iconURL: context.guild.iconURL(),
         })
-        .setTimestamp(); // o timestamp continua aqui
+        .setTimestamp();
     
-    // a gente só adiciona as outras partes se elas forem passadas nas 'options'
     if (options.title) {
         embed.setTitle(options.title);
     }
