@@ -8,7 +8,7 @@ async function tosCheck(interaction) {
     const user = getUser(interaction.user.id);
 
     if (user.tosVersion >= currentTosVersion) {
-        return true; // tá liberado, pode continuar
+        return true;
     }
 
     const isFirstTime = user.tosVersion === 0;
@@ -17,44 +17,37 @@ async function tosCheck(interaction) {
     const embed = await createEmbed(interaction, {
         title: `<:novato:1394085774567276614> ${isPtBr ? 'Termos de Serviço e Política de Privacidade' : 'Terms of Service & Privacy Policy'}`,
         description: isFirstTime
-            ? (isPtBr ? 'Bem-vindo(a)! Para usar minhas funções, você precisa concordar com nossos Termos. Isso garante um ambiente seguro para todos.' : 'Welcome! To use my functions, you need to agree to our Terms. This ensures a safe environment for everyone.')
-            : (isPtBr ? 'Nossos Termos foram atualizados! Para continuar, por favor, leia e aceite a nova versão.' : 'Our Terms have been updated! To continue, please read and accept the new version.'),
+            ? (isPtBr ? 'Bem-vindo(a)! Para usar minhas funções, você precisa concordar com nossos Termos.' : 'Welcome! To use my functions, you need to agree to our Terms.')
+            : (isPtBr ? 'Nossos Termos foram atualizados! Por favor, leia e aceite a nova versão.' : 'Our Terms have been updated! Please read and accept the new version.'),
     });
 
-    // AQUI ESTAVA O PROBLEMA: AGORA A GENTE CRIA OS BOTÕES DE VERDADE
     const buttons = new ActionRowBuilder()
         .addComponents(
-            new ButtonBuilder()
-                .setCustomId(`tos_accept_${interaction.user.id}`)
-                .setLabel(isPtBr ? 'Aceitar e Continuar' : 'Accept and Continue')
-                .setEmoji('<:confere:1394116085279883274>')
-                .setStyle(ButtonStyle.Success),
-            new ButtonBuilder()
-                .setLabel(isPtBr ? 'Termos de Serviço' : 'Terms of Service')
-                .setStyle(ButtonStyle.Link)
-                .setURL('https://binders.carrd.co/#politicas'),
-            new ButtonBuilder()
-                .setLabel(isPtBr ? 'Política de Privacidade' : 'Privacy Policy')
-                .setStyle(ButtonStyle.Link)
-                .setURL('https://binders.carrd.co/#politicas')
+            new ButtonBuilder().setCustomId(`tos_accept_${interaction.user.id}`).setLabel(isPtBr ? 'Aceitar e Continuar' : 'Accept and Continue').setEmoji('<:confere:1394116085279883274>').setStyle(ButtonStyle.Success),
+            new ButtonBuilder().setLabel(isPtBr ? 'Termos de Serviço' : 'Terms of Service').setStyle(ButtonStyle.Link).setURL('https://binders.carrd.co/#politicas'),
+            new ButtonBuilder().setLabel(isPtBr ? 'Política de Privacidade' : 'Privacy Policy').setStyle(ButtonStyle.Link).setURL('https://binders.carrd.co/#politicas')
         );
     
-    // a gente checa se a interação já foi respondida ou adiada
+    const payload = {
+        embeds: [embed],
+        components: [buttons],
+        ephemeral: true, // vamos manter efêmero para não poluir o chat para comandos /
+    };
+    
+    // Lógica de resposta inteligente
     if (interaction.deferred || interaction.replied) {
-        await interaction.editReply({
-            embeds: [embed],
-            components: [buttons],
-            flags: [MessageFlags.Ephemeral],
-        });
-    } else {
-        await interaction.reply({
-            embeds: [embed],
-            components: [buttons],
-            flags: [MessageFlags.Ephemeral], // usando o jeito novo e moderno
-        });
+        // se a interação já foi "adiada" ou respondida, a gente edita a resposta
+        await interaction.editReply(payload);
+    } else if (interaction.isButton()) {
+        // se for um clique de botão (como o 'vamos lá'), a gente atualiza a mensagem original
+        await interaction.update(payload);
+    }
+     else {
+        // se for uma interação nova (como um comando /), a gente cria uma resposta
+        await interaction.reply(payload);
     }
 
-    return false; // barra o comando original
+    return false;
 }
 
 module.exports = tosCheck;
