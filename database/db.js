@@ -8,26 +8,14 @@ const fs = require('node:fs');
 const dbPath = path.join(__dirname, 'main.db');
 const db = new Database(dbPath);
 
-// --- statements preparados ---
-// pra n ficar preparando a mesma query toda hora, a gente prepara uma vez só aqui.
-// fica bem mais rapido.
-const selectUser = db.prepare('SELECT * FROM users WHERE userId = ?');
-const insertUser = db.prepare('INSERT INTO users (userId) VALUES (?)');
-
-
 function createDailyBackup() {
     const backupDir = path.join(__dirname, 'backups');
-
-    // cria a pasta de backup se n existir
     if (!fs.existsSync(backupDir)) {
         fs.mkdirSync(backupDir);
         console.log('[db] pasta de backups criada.');
     }
-
     const today = new Date().toISOString().slice(0, 10);
     const backupFilePath = path.join(backupDir, `backup-${today}.db`);
-
-    // só faz o backup se o de hoje ainda n foi feito
     if (!fs.existsSync(backupFilePath)) {
         db.backup(backupFilePath)
             .then(() => console.log(`[db] backup do dia ${today} feito.`))
@@ -35,11 +23,12 @@ function createDailyBackup() {
     }
 }
 
+// --- INICIALIZAÇÃO E MIGRAÇÃO ---
 function initializeDatabase() {
     console.log('[db] verificando estrutura do banco de dados...');
     createDailyBackup();
 
-    // cria as tabelas se elas n existirem. o .exec roda tudo de uma vez
+    // 1. garante que as tabelas base existem
     const createTablesStmt = `
         CREATE TABLE IF NOT EXISTS users (
             userId TEXT PRIMARY KEY,
@@ -48,32 +37,37 @@ function initializeDatabase() {
             badges TEXT,
             isDeveloper INTEGER DEFAULT 0
         );
-        CREATE TABLE IF NOT EXISTS guilds (
-            guildId TEXT PRIMARY KEY,
-            antiraidEnabled INTEGER DEFAULT 0,
-            welcomeChannelId TEXT,
-            goodbyeChannelId TEXT
-        );
-        CREATE TABLE IF NOT EXISTS ai_history (
-            messageId TEXT PRIMARY KEY,
-            userId TEXT NOT NULL,
-            role TEXT NOT NULL,
-            content TEXT NOT NULL,
-            timestamp INTEGER NOT NULL
-        );
+        CREATE TABLE IF NOT EXISTS guilds ( guildId TEXT PRIMARY KEY, antiraidEnabled INTEGER DEFAULT 0, welcomeChannelId TEXT, goodbyeChannelId TEXT );
+        CREATE TABLE IF NOT EXISTS ai_history ( messageId TEXT PRIMARY KEY, userId TEXT NOT NULL, role TEXT NOT NULL, content TEXT NOT NULL, timestamp INTEGER NOT NULL );
     `;
     db.exec(createTablesStmt);
+
+    // 2. tenta fazer a 'reforma' (migração), adicionando a coluna nova
+    try {
+        db.prepare('ALTER TABLE users ADD COLUMN lastKnownLocale TEXT').run();
+        console.log('[db migration] coluna "lastKnownLocale" adicionada com sucesso.');
+    } catch (error) {
+        // se o erro for 'duplicate column name', significa q a coluna já existe. perfeito, sem problemas.
+        if (!error.message.includes('duplicate column name')) {
+            console.error('[db migration] erro ao adicionar coluna:', error);
+        }
+    }
 
     console.log('[db] tabelas prontas.');
 }
 
-// prepara o db assim que o bot liga
+// RODA A INICIALIZAÇÃO E REFORMA PRIMEIRO
 initializeDatabase();
 
 
-// --- funções 'gerente' ---
+// --- STATEMENTS PREPARADOS ---
+// só depois que a tabela tá 100% certa, a gente prepara os comandos
+const selectUser = db.prepare('SELECT * FROM users WHERE userId = ?');
+const insertUser = db.prepare('INSERT INTO users (userId) VALUES (?)');
+const updateUserLocale = db.prepare('UPDATE users SET lastKnownLocale = ? WHERE userId = ?');
 
-// pego o user. se n achar, crio um registro novo pra ele com os defaults da tabela.
+
+// --- FUNÇÕES 'GERENTE' ---
 function getUser(userId) {
     let user = selectUser.get(userId);
     if (!user) {
@@ -82,12 +76,11 @@ function getUser(userId) {
     }
     return user;
 }
-
-// função genérica pra dar update na coluna de um user.
 function updateUser(userId, column, value) {
-    // aqui tem q preparar toda vez pq o nome da coluna é dinamico.
     db.prepare(`UPDATE users SET ${column} = ? WHERE userId = ?`).run(value, userId);
 }
+function setLastKnownLocale(userId, locale) {
+    updateUserLocale.run(locale, userId);
+}
 
-
-module.exports = { db, getUser, updateUser };
+module.exports = { db, getUser, updateUser, setLastKnownLocale };
