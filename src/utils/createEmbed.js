@@ -32,7 +32,7 @@ async function createEmbed(context, options = {}) {
         });
         embed.setFooter({
             text: `${context.guild.name} - ${clientUser.displayName}`,
-            iconURL: context.guild.iconURL({ dynamic: true }), // dynamic: true pra pegar .gif
+            iconURL: context.guild.iconURL({ dynamic: true }), // true pra pegar .gif
         });
     } else {
         // se for numa dm, monta um embed mais simples

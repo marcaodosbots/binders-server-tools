@@ -1,31 +1,27 @@
 // src/utils/getLanguage.js
-const { getUser } = require('../../database/db.js'); // puxa a função de pegar user do nosso db
+const { getUser } = require('../../database/db.js');
 
 function getLanguage(context) {
-    // descobre se o contexto é uma interaction ou uma message e pega o id do user
-    const isInteraction = !!context.user;
-    const userId = isInteraction ? context.user.id : context.author.id;
+    const userId = context.user ? context.user.id : context.author.id;
     const userData = getUser(userId);
 
-    // checa a preferência de idioma salva no db
+    // checa a preferência salva no db
     switch (userData.language) {
-        // 1. se o user forçou um idioma fixo, a gente obedece sem questionar
+        // 1. se forçou um idioma fixo, obedece
         case 'lang_pt_br':
             return 'pt_BR';
         case 'lang_en_us':
             return 'en_US';
         
-        // 2. se a config for 'auto', entra na nossa lógica inteligente
+        // 2. se for 'auto', entra na nossa lógica inteligente
         case 'lang_auto':
         default:
-            // se for uma interação, a gente sempre pega o idioma mais fresco do discord
-            if (isInteraction) {
-                return context.locale === 'pt-BR' ? 'pt_BR' : 'en_US';
-            }
+            // pega o melhor idioma disponível (o da interação ou da 'memória')
+            const bestAvailableLocale = (context.user && context.locale) || userData.lastKnownLocale || context.locale;
             
-            // se for uma menção (message), a gente usa a 'memória' do último idioma visto.
-            // se n tiver nada na memória, aí sim usa o locale da msg como fallback final.
-            return userData.lastKnownLocale || (context.locale === 'pt-BR' ? 'pt_BR' : 'en_US');
+            // AQUI A MUDANÇA: a gente normaliza o resultado.
+            // se o idioma for pt-BR, a gente usa. pra QUALQUER outra coisa, a gente usa en_US como padrão.
+            return bestAvailableLocale === 'pt-BR' ? 'pt_BR' : 'en_US';
     }
 }
 

@@ -1,4 +1,3 @@
-// src/interactions/selects/lang_select.js
 const { updateUser } = require('../../../database/db.js');
 const createEmbed = require('../../utils/createEmbed.js');
 const checkInteractionOwnership = require('../../utils/interactionOwnership.js');

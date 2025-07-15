@@ -1,5 +1,3 @@
-// database/db.js
-
 const Database = require('better-sqlite3');
 const path = require('node:path');
 const fs = require('node:fs');
@@ -61,7 +59,7 @@ function initializeDatabase() {
 
 initializeDatabase();
 
-// --- funções 'gerente' ---
+// --- funções de update etc---
 function getUser(userId) {
     let user = selectUser.get(userId);
     if (!user) {

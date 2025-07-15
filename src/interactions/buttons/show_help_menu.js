@@ -1,9 +1,8 @@
-// src/interactions/buttons/show_help_menu.js
 const { MessageFlags } = require('discord.js');
 const createEmbed = require('../../utils/createEmbed.js');
 const getLanguage = require('../../utils/getLanguage.js');
 
-// centraliza os textos aqui em cima pra deixar a função execute mais limpa
+// textos aq
 const texts = {
     title: {
         'pt_BR': '<:support:1393820810434576434> Em manutenção!',
@@ -20,7 +19,7 @@ module.exports = {
     name: 'show_help_menu',
     
     async execute(interaction) {
-        // o 'checkInteractionOwnership' ja foi feito no roteador
+        //obs q se ta aqui ja foi visto que o botao e da pessoa pq no roteador (interactionhandler) ja foi feito a verificacao
         const lang = getLanguage(interaction);
 
         // monta o embed usando os textos do idioma certo

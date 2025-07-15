@@ -14,7 +14,7 @@ const descriptions = {
     pt_BR: ["Eu sou o ${botName} <:verified_app_1:1336358365479305366><:verified_app_2:1336358433946861649> e tô aqui pra dar aquela força no seu servidor! Eu tenho utilidades e posso ser integrado em diferentes plataformas. Digita **'/'** e bora ver o que dá pra fazer.", "${botName} <:verified_app_1:1336358365479305366><:verified_app_2:1336358433946861649> na área ! Só escrever **'/'** aí e explorar os comandos. São vários, e são para diferentes públicos, ein!", "Se tá perdido, relaxa que eu te ajudo. Sou o ${botName} <:verified_app_1:1336358365479305366><:verified_app_2:1336358433946861649>. Meu objetivo é ajudar você com meus comandos de utilidades! Dá um **'/'** aí e confere tudo que eu posso fazer.", "Como sempre, ${botName} <:verified_app_1:1336358365479305366><:verified_app_2:1336358433946861649> por aqui. Minha equipe trabalha cada vez mais para ter mais comandos! Veja meus comandos com **'/'**.", "Sou o ${botName} e manjo quando o assunto é utilidades e ferramentas. Para ver o que eu posso fazer, só digitar **'/'** ou clicar no botão aqui em baixo!"]
 };
 
-// funções ajudantes pra criar os botoes, mais organizado
+// funções  pra criar os botoes, mais organizado
 const createTosStartButton = (lang, authorId) => {
     const label = lang === 'pt_BR' ? 'Vamos lá!' : 'Let\'s go!';
     const button = new ButtonBuilder().setCustomId(`start_tos_${authorId}`).setLabel(label).setStyle(ButtonStyle.Secondary).setEmoji('<:carta:1394142002404135003>');

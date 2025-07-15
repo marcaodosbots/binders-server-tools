@@ -1,4 +1,3 @@
-// src/events/no_command.js
 const { MessageFlags } = require('discord.js');
 const getLanguage = require('../utils/getLanguage.js'); // nosso detetive de idioma
 
@@ -14,7 +13,7 @@ module.exports = {
         // pega a lingua e o texto correspondente de uma vez só
         const content = errorTexts[getLanguage(interaction)];
 
-        // checagem de segurança pra evitar crash de 'interaction has already been replied'
+        // checagem de segurança pra evitar resposta dupla
         if (interaction.deferred || interaction.replied) {
             return interaction.followUp({
                 content: content,

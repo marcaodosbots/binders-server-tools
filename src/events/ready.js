@@ -56,7 +56,7 @@ module.exports = {
     once: true, // 'true' significa q esse evento só vai rodar uma vez (quando o bot liga)
     
     execute(client) {
-        console.log(`tamo on, logado como ${client.user.tag}`);
+        console.log(`[Logado] ${client.user.tag}`);
 
         // ---- LÓGICA DO STATUS ROTATIVO ----
         const shuffle = (array) => {

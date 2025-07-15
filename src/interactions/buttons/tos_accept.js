@@ -6,7 +6,6 @@ const createEmbed = require('../../utils/createEmbed.js');
 const checkInteractionOwnership = require('../../utils/interactionOwnership.js');
 const getLanguage = require('../../utils/getLanguage.js');
 
-// central de textos pra esse handler, deixa o código principal mais limpo
 const texts = {
     lang_screen: {
         title: {
@@ -24,7 +23,7 @@ const texts = {
     },
     updated_screen: {
         title: {
-            'pt_BR': '✅ Termos Atualizados!',
+            'pt_BR': '✅ Termos Atualizados!', //essa coisa ta uma bomba etm que mudar
             'en_US': '✅ Terms Updated!',
         },
         description: {
