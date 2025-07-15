@@ -2,7 +2,7 @@
 const { MessageFlags } = require('discord.js');
 const getLanguage = require('./getLanguage');
 
-// agora com as duas listas de mensagens completas
+// msgs pro curioso que clica onde n deve
 const errorMessages = {
     pt_BR: [
         '<:x_:1394185776807546963> Seu inxerido! Esse botão não é pra você!',
@@ -21,29 +21,29 @@ const errorMessages = {
 };
 
 async function checkInteractionOwnership(interaction) {
-    // se o ID não tem '_', a gente assume q é um botão público
-    if (!interaction.customId.includes('_')) {
-        return true; // libera a passagem
+    // se o customId n tem '_', a gente assume q é um botão público e libera geral
+    if (!interaction.customId?.includes('_')) {
+        return true;
     }
 
-    // se tem '_', a gente continua com a verificação de dono normal
+    // se tem '_', é privado, tem q checar o dono
     const targetUserId = interaction.customId.split('_').pop();
 
     if (interaction.user.id !== targetUserId) {
         const lang = getLanguage(interaction);
-        const langCode = lang === 'pt_BR' ? 'pt_BR' : 'en_US';
         
-        // escolhe uma msg de erro aleatoria no idioma certo
-        const randomError = errorMessages[langCode][Math.floor(Math.random() * errorMessages[langCode].length)];
+        // pega uma msg aleatoria de 'sai daqui' na lingua certa
+        const randomError = errorMessages[lang][Math.floor(Math.random() * errorMessages[lang].length)];
 
         await interaction.reply({
             content: randomError,
             flags: [MessageFlags.Ephemeral]
         });
-        return false; // barra a interação
+        return false; // barra o curioso
     }
 
-    return true; // se for o dono, libera a passagem
+    // se chegou até aqui, é o dono. liberado.
+    return true;
 }
 
 module.exports = checkInteractionOwnership;

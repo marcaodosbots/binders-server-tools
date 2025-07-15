@@ -1,27 +1,28 @@
-// src/utils/errorHandler.js
+// src/handlers/errorHandler.js
 
-// esse arquivo vai cuidar de qualquer erro q n for pego pelos nossos try...catch
-// ele é o airbag do bot
+// vigia global pra pegar qualquer erro q n for tratado e impedir o bot de crashar
+// tem q ser o primeiro require no index.js pra funcionar direito
 
 module.exports = () => {
+    // qnd uma promise da pau e ngm pega o erro com .catch()
     process.on('unhandledRejection', (reason, promise) => {
-        console.error('[ERRO GRAVE] Rejeição não tratada em:', promise, 'motivo:', reason);
-        // aqui vc poderia logar o erro num canal do discord com um webhook, por exemplo
+        console.error('[process] unhandled rejection:', reason);
     });
 
+    // qnd um erro de código normal (síncrono) escapa de um try/catch
     process.on('uncaughtException', (error, origin) => {
-        console.error('[ERRO GRAVE] Exceção não capturada:', error, 'origem:', origin);
-        // o ideal aqui seria reiniciar o bot, mas por enquanto, só logar já previne o crash
+        console.error('[process] uncaught exception:', error, origin);
     });
 
+    // um monitor extra pra exceções, só por garantia
     process.on('uncaughtExceptionMonitor', (error, origin) => {
-        console.error('[ERRO GRAVE] Exceção não capturada (Monitor):', error, 'origem:', origin);
+        console.error('[process] uncaught exception monitor:', error, origin);
     });
 
-    // esse aqui é pra quando o bot receber um aviso (warning) do node
+    // qnd o proprio node.js manda um aviso (ex: 'ephemeral' obsoleto)
     process.on('warning', (warning) => {
-        console.warn('[AVISO] Alerta do processo:', warning);
+        console.warn('[process] warning:', warning.name, '-', warning.message);
     });
 
-    console.log('[Handler de Erros] Vigia global de erros ativado.');
+    console.log('[errorHandler] vigia de erros globais ativado.');
 };
