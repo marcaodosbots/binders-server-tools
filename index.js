@@ -32,17 +32,33 @@ client.commands = new Collection();
 client.buttons = new Collection();
 client.selects = new Collection();
 
-// Carregador de Comandos
-const commandFolders = fs.readdirSync(path.join(__dirname, 'src', 'commands'));
-for (const folder of commandFolders) {
-    const commandFiles = fs.readdirSync(path.join(__dirname, 'src', 'commands', folder)).filter(file => file.endsWith('.js'));
-    for (const file of commandFiles) {
-        const command = require(`./src/commands/${folder}/${file}`);
+// --- carregador de comandos ---
+client.commands = new Collection();
+const commandsPath = path.join(__dirname, 'src', 'commands');
+const commandItems = fs.readdirSync(commandsPath); // Pega todos os itens (pastas e arquivos)
+
+for (const item of commandItems) {
+    const itemPath = path.join(commandsPath, item);
+    // checa se o item é uma pasta
+    if (fs.statSync(itemPath).isDirectory()) {
+        // se for uma pasta, lê os arquivos de comando dentro dela
+        const commandFiles = fs.readdirSync(itemPath).filter(file => file.endsWith('.js'));
+        for (const file of commandFiles) {
+            const filePath = path.join(itemPath, file);
+            const command = require(filePath);
+            if ('data' in command && 'execute' in command) {
+                client.commands.set(command.data.name, command);
+            }
+        }
+    } else if (item.endsWith('.js')) {
+        // se for um arquivo .js solto, carrega ele diretamente
+        const command = require(itemPath);
         if ('data' in command && 'execute' in command) {
             client.commands.set(command.data.name, command);
         }
     }
 }
+// a linha de log de quantos comandos foram carregados vem depois do loop
 console.log(`[CARREGADOR] Carregados ${client.commands.size} comandos.`);
 
 // Carregador de Eventos
