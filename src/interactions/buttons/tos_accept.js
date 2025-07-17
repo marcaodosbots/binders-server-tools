@@ -23,8 +23,8 @@ const texts = {
     },
     updated_screen: {
         title: {
-            'pt_BR': '✅ Termos Atualizados!', //essa coisa ta uma bomba etm que mudar
-            'en_US': '✅ Terms Updated!',
+            'pt_BR': '<:v_:1394894026678861825> Termos Atualizados!', //essa coisa ta uma bomba etm que mudar
+            'en_US': '<:v_:1394894026678861825> Terms Updated!',
         },
         description: {
             'pt_BR': 'Obrigado por aceitar a nova versão dos nossos termos. Você já pode usar o comando que tentou originalmente.',
