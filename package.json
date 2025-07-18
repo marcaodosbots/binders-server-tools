@@ -4,7 +4,9 @@
   "description": "Bot multifuncional para Discord com foco em moderação e utilidades.",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "deploy": "node deploy-commands.js"
   },
   "keywords": [
     "discord",
@@ -12,10 +14,20 @@
     "discordjs"
   ],
   "author": "marcaodosbots",
-  "license": "MIT",
+  "license": "GPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marcaodosbots/binders-server-tools.git"
+  },
+  "bugs": {
+    "url": "https://github.com/marcaodosbots/binders-server-tools/issues"
+  },
   "dependencies": {
-    "better-sqlite3": "^12.2.0",
-    "discord.js": "^14.14.1",
-    "dotenv": "^16.6.1"
+    "better-sqlite3": "^11.1.2",
+    "discord.js": "^14.15.3",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
   }
 }

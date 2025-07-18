@@ -1,4 +1,3 @@
-// src/interactions/buttons/tos_accept.js
 const { updateUser, getUser } = require('../../../database/db.js');
 const { currentTosVersion } = require('../../config/config.js');
 const { ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');

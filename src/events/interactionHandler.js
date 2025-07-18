@@ -8,10 +8,10 @@ module.exports = {
     name: Events.InteractionCreate,
     once: false,
     async execute(interaction, client) {
-        console.log(`[DEBUG] 1. Roteador recebeu uma interação. Tipo: ${interaction.type}. Local: ${interaction.inGuild() ? 'Servidor' : 'DM'}`);
+        // ignora interações de bots
         if (interaction.user.bot) return;
 
-        // só 'aprende' o idioma se for numa interação de servidor
+        // se a interação for num servidor, a gente 'aprende' o idioma do usuário
         if (interaction.inGuild()) {
             const userData = getUser(interaction.user.id);
             if (userData.language === 'lang_auto') {
@@ -19,20 +19,17 @@ module.exports = {
             }
         }
 
-        // --- Roteador para Comandos de Barra (/) ---
+        // --- roteador de comandos de barra (/) ---
         if (interaction.isChatInputCommand()) {
-            console.log(`[DEBUG] 2. É um comando de barra: /${interaction.commandName}`);
+            // porteiro sempre checa os termos para comandos
             const canProceed = await tosCheck(interaction);
-            if (!canProceed) {
-                console.log('[DEBUG] Interação barrada pelo tosCheck.');
-                return;
-            }
+            if (!canProceed) return; 
 
             const command = client.commands.get(interaction.commandName);
             if (!command) {
-                console.log(`[DEBUG] Roteador não achou o comando, chamando o handler de erro.`);
-                return interactionErrorHandler.execute(interaction, new Error('Comando não encontrado'));
+                return interactionErrorHandler.execute(interaction, new Error(`Comando de barra não encontrado: /${interaction.commandName}`));
             }
+
             try {
                 await command.execute(interaction, client);
             } catch (error) { 
@@ -42,30 +39,30 @@ module.exports = {
             return;
         }
 
-        // --- Roteador pra Componentes (Botão e Menu) ---
+        // --- roteador pra componentes (botão e menu) ---
         if (interaction.isButton() || interaction.isStringSelectMenu()) {
-            console.log(`[DEBUG] 2. É um componente. ID: ${interaction.customId}`);
+            // segurança pra não deixar curioso clicar onde não deve
             const isOwner = await checkInteractionOwnership(interaction);
             if (!isOwner) return;
 
-            // caso especial pro botão q inicia o fluxo de ToS
+            // caso especial pro botão que inicia o fluxo de ToS
             if (interaction.customId.startsWith('start_tos')) {
-                console.log(`[DEBUG] Roteador identificou o botão 'start_tos'. Chamando o porteiro tosCheck...`);
                 return tosCheck(interaction);
             }
 
+            // descobre se é pra procurar na gaveta de botão ou de menu
             const handlerCollection = interaction.isButton() ? client.buttons : client.selects;
             const handler = handlerCollection.find(h => interaction.customId.startsWith(h.name));
             
             if (!handler) {
                 console.error(`handler nao encontrado pra: ${interaction.customId}`);
-                return interactionErrorHandler.execute(interaction, new Error(`Handler de componente não encontrado`));
+                return interactionErrorHandler.execute(interaction, new Error(`Handler de componente não encontrado: ${interaction.customId}`));
             }
-
+            
             try {
                 await handler.execute(interaction, client);
             } catch (error) { 
-                console.error(`deu pau na interação ${interaction.customId}:`, error); 
+                console.error(`ruim na interação ${interaction.customId}:`, error); 
                 return interactionErrorHandler.execute(interaction, error);
             }
         }

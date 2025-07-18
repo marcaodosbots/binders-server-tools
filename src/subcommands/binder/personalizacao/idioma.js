@@ -34,7 +34,7 @@ const texts = {
 
 module.exports = {
     async execute(interaction, client) {
-        // avisa o discord q o bot ta 'pensando', pra ganhar mais tempo pra responder
+        // defer
         await interaction.deferReply();
 
         const lang = getLanguage(interaction);
@@ -56,7 +56,6 @@ module.exports = {
                 ])
         );
         
-        // como a gente usou o defer, agora a gente edita a resposta 'pensando...'
         await interaction.editReply({
             embeds: [langEmbed],
             components: [langMenu],

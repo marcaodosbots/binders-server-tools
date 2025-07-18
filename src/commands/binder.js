@@ -1,8 +1,6 @@
-// src/commands/Configuracao/binder.js
 const { SlashCommandBuilder } = require('discord.js');
 const tosCheck = require('../utils/tosCheck.js');
 const path = require('node:path');
-// 1. IMPORTA O NOSSO GERENTE DE ERROS
 const interactionErrorHandler = require('../utils/interactionErrorHandler.js');
 
 module.exports = {
@@ -36,7 +34,6 @@ module.exports = {
         } catch (error) {
             console.error(`Erro ao carregar ou executar o subcomando '${subCommandName}':`, error);
             
-            // 2. AQUI A MUDANÇA: em vez de uma msg feia, ele passa o problema pro especialista
             return interactionErrorHandler.execute(interaction, error);
         }
     },

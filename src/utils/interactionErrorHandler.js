@@ -1,4 +1,3 @@
-// src/utils/interactionErrorHandler.js
 const { MessageFlags } = require('discord.js');
 const getLanguage = require('./getLanguage.js');
 const createEmbed = require('./createEmbed.js');
@@ -17,10 +16,10 @@ const texts = {
 
 module.exports = {
     async execute(interaction, error) {
-        // 1. manda o relatório detalhado pro nosso canal de logs
+        // manda pros logs
         await logErrorToWebhook(interaction, error);
 
-        // 2. manda a resposta amigável e simples pro usuário
+        // msg simples pra pessoa
         const lang = getLanguage(interaction);
         const errorEmbed = await createEmbed(interaction, {
             title: texts.title[lang],

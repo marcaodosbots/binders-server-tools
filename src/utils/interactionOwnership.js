@@ -1,4 +1,3 @@
-// src/utils/interactionOwnership.js
 const { MessageFlags } = require('discord.js');
 const getLanguage = require('./getLanguage');
 

@@ -1,4 +1,3 @@
-// src/utils/createEmbed.js
 const { EmbedBuilder } = require('discord.js');
 
 // config base pra todos os embeds

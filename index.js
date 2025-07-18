@@ -1,8 +1,5 @@
-// src/index.js
-
-// o vigia de erros tem q ser a primeira coisa sempre
+//anti crash
 require('./src/utils/errorHandler.js')();
-
 const { Client, Collection, GatewayIntentBits, Partials } = require('discord.js');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -10,10 +7,10 @@ const path = require('node:path');
 // carrega o .env pro process.env
 require('dotenv').config();
 
-// puxa e inicia a database (fora da src msm)
+// puxa e inicia a database 
 require('./database/db.js');
 
-// instancia o client, definindo os intents CORRETOS E COMPLETOS
+// intent e coisa o client
 const client = new Client({ 
     intents: [
         GatewayIntentBits.Guilds,
@@ -27,7 +24,7 @@ const client = new Client({
     ]
 });
 
-// --- Carregadores ---
+// --- carregadores ---
 client.commands = new Collection();
 client.buttons = new Collection();
 client.selects = new Collection();
@@ -35,7 +32,7 @@ client.selects = new Collection();
 // --- carregador de comandos ---
 client.commands = new Collection();
 const commandsPath = path.join(__dirname, 'src', 'commands');
-const commandItems = fs.readdirSync(commandsPath); // Pega todos os itens (pastas e arquivos)
+const commandItems = fs.readdirSync(commandsPath); // pega tudo
 
 for (const item of commandItems) {
     const itemPath = path.join(commandsPath, item);
@@ -61,7 +58,7 @@ for (const item of commandItems) {
 // a linha de log de quantos comandos foram carregados vem depois do loop
 console.log(`[CARREGADOR] Carregados ${client.commands.size} comandos.`);
 
-// Carregador de Eventos
+// carregador de eventos
 const eventFiles = fs.readdirSync(path.join(__dirname, 'src', 'events')).filter(file => file.endsWith('.js'));
 for (const file of eventFiles) {
     const event = require(`./src/events/${file}`);
@@ -72,7 +69,7 @@ for (const file of eventFiles) {
     }
 }
 
-// Carregador de Botões
+// carregador de botões
 const buttonFiles = fs.readdirSync(path.join(__dirname, 'src', 'interactions', 'buttons')).filter(file => file.endsWith('.js'));
 for (const file of buttonFiles) {
     const button = require(`./src/interactions/buttons/${file}`);
@@ -80,7 +77,7 @@ for (const file of buttonFiles) {
 }
 console.log(`[CARREGADOR] Carregados ${client.buttons.size} handlers de botão.`);
 
-// Carregador de Menus de Seleção
+// carregador de menus de seleção
 const selectFiles = fs.readdirSync(path.join(__dirname, 'src', 'interactions', 'selects')).filter(file => file.endsWith('.js'));
 for (const file of selectFiles) {
     const select = require(`./src/interactions/selects/${file}`);

@@ -1,4 +1,3 @@
-// src/utils/logHandler.js
 const { WebhookClient, EmbedBuilder } = require('discord.js');
 
 async function logErrorToWebhook(interaction, error) {

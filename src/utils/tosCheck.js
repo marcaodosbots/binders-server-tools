@@ -1,4 +1,3 @@
-// src/utils/tosCheck.js
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require('discord.js');
 const { getUser } = require('../../database/db.js');
 const { currentTosVersion } = require('../config/config.js');
