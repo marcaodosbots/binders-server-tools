@@ -1,4 +1,18 @@
-node_modules
+# Dependências e arquivos de ambiente
+node_modules/
 .env
-/database/main.db
-/database/backups/
+
+# Banco de Dados do Servidor de Produção (Sincronizado via Syncthing)
+database-server/
+
+# Banco de Dados Local e Backups
+database/main.db
+database/main.db-*
+database/backups/
+
+# Logs e arquivos de sistema
+*.log
+logs/
+.DS_Store
+Thumbs.db
+
