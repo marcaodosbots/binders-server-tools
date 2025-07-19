@@ -1,0 +1,5 @@
+# This directory is a Syncthing folder marker.
+# Do not delete.
+
+folderID: binder-bot-db-sync
+created: 2025-07-18T21:45:40-03:00
