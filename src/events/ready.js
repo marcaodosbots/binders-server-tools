@@ -48,14 +48,18 @@ let statusList = [
     '❓ Use o /ajuda!'
 ];
 */
+const { sendLifecycleLog } = require('../utils/lifecycleLogger.js');
 let statusList = [
     '🛠 Estamos deixando as coisas mais incríveis! Em manuntenção!'
     ];
+
 module.exports = {
-    name: Events.ClientReady, // o nome do evento que a gente ta ouvindo
-    once: true, // 'true' significa q esse evento só vai rodar uma vez (quando o bot liga)
+    name: Events.ClientReady,
+    once: true, // só roda uma vez, quando o bot liga
     
     execute(client) {
+        // avisa no canal de logs
+        sendLifecycleLog('🟢 Bot Online!', 'Green');
         console.log(`[Logado] ${client.user.tag}`);
 
         // ---- LÓGICA DO STATUS ROTATIVO ----
@@ -82,6 +86,6 @@ module.exports = {
             const newStatus = shuffledStatus[statusIndex];
             client.user.setActivity(newStatus, { type: ActivityType.Custom });
             statusIndex++;
-        }, 30000);
+        }, 30000); // 30 segundos
     },
 };

@@ -16,9 +16,12 @@ module.exports = {
         .setDMPermission(true)
         .addSubcommand(subcommand =>
             subcommand
-                .setName('idioma')
+                .setName('idioma') //por favor, nao me julgue, so que colocar a description localization em ingles nao tava indo por algum motivo....
                 .setNameLocalizations({ 'en-US': 'language' })
-                .setDescription('Personalização ❯ Altera o seu idioma de preferência.')
+                .setDescription('Personalization ❯ Changes your preferred language.')
+                .setDescriptionLocalizations({
+                    'pt-BR': 'Personalização ❯ Altera o seu idioma de preferência.',
+                })
         ),
 
     async execute(interaction, client) {
@@ -32,8 +35,7 @@ module.exports = {
             const subCommand = require(subCommandPath);
             await subCommand.execute(interaction, client);
         } catch (error) {
-            console.error(`Erro ao carregar ou executar o subcomando '${subCommandName}':`, error);
-            
+            console.error(`Erro ao carregar o subcomando '${subCommandName}':`, error);
             return interactionErrorHandler.execute(interaction, error);
         }
     },

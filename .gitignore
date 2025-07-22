@@ -9,6 +9,7 @@ database-server/
 database/main.db
 database/main.db-*
 database/backups/
+database/.stfolder
 
 # Logs e arquivos de sistema
 *.log
@@ -16,3 +17,8 @@ logs/
 .DS_Store
 Thumbs.db
 
+# Arquivos do Servidor
+
+webhook-server.js
+deploy.sh
+send-deploy-notice.js

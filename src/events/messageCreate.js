@@ -4,27 +4,51 @@ const getLanguage = require('../utils/getLanguage.js');
 const { getUser } = require('../../database/db.js');
 const { currentTosVersion } = require('../config/config.js');
 
-const greetings = {
-    en_US: ['Hey, ${displayName}!', 'Hello, ${displayName}!', 'Hi there, ${displayName}!', 'Greetings, ${displayName}!', 'What\'s up, ${displayName}?', 'Good to see you, ${displayName}!', 'How can I help, ${displayName}?', 'At your service, ${displayName}!', 'You summoned me, ${displayName}?', 'Binder at your command, ${displayName}!'],
-    pt_BR: ['<:mencao:1393999045248417924> E aí, ${displayName}!', '<:mencao:1393999045248417924> Fala tu, ${displayName}!', '<:mencao:1393999045248417924> Opa opa, ${displayName} chegou!', '<:mencao:1393999045248417924> Salve, ${displayName}!', '<:mencao:1393999045248417924> Como tamo, ${displayName}?', '<:mencao:1393999045248417924> Bom te ver por aqui, ${displayName}!', '<:mencao:1393999045248417924> Tudo certo por aí, ${displayName}?', '<:mencao:1393999045248417924> Chama que eu venho, ${displayName}!', '<:mencao:1393999045248417924> Tô na área, ${displayName}!', '<:mencao:1393999045248417924> Diz aí, ${displayName}! Tô pronto pro que der e vier.']
-};
-const descriptions = {
-    en_US: ["I'm ${botName} <:verified_app_1:1336358365479305366><:verified_app_2:1336358433946861649>, here to provide utilities and make your server management easier. Use **'/'** to see what I can do!", "${botName} at your service <:verified_app_1:1336358365479305366><:verified_app_2:1336358433946861649>! I have a set of commands ready to help you out. Just type **'/'** to get started.", "Need a hand? I'm ${botName} <:verified_app_1:1336358365479305366><:verified_app_2:1336358433946861649>, equipped with commands to assist you. Explore them using **'/'**.", "You've reached ${botName} <:verified_app_1:1336358365479305366><:verified_app_2:1336358433946861649>. My purpose is to serve and assist. Check out my commands with **'/'**.", "This is ${botName} <:verified_app_1:1336358365479305366><:verified_app_2:1336358433946861649>. I'm ready to help! All my features are available through slash commands. Try typing **'/'**."],
-    pt_BR: ["Eu sou o ${botName} <:verified_app_1:1336358365479305366><:verified_app_2:1336358433946861649> e tô aqui pra dar aquela força no seu servidor! Eu tenho utilidades e posso ser integrado em diferentes plataformas. Digita **'/'** e bora ver o que dá pra fazer.", "${botName} <:verified_app_1:1336358365479305366><:verified_app_2:1336358433946861649> na área ! Só escrever **'/'** aí e explorar os comandos. São vários, e são para diferentes públicos, ein!", "Se tá perdido, relaxa que eu te ajudo. Sou o ${botName} <:verified_app_1:1336358365479305366><:verified_app_2:1336358433946861649>. Meu objetivo é ajudar você com meus comandos de utilidades! Dá um **'/'** aí e confere tudo que eu posso fazer.", "Como sempre, ${botName} <:verified_app_1:1336358365479305366><:verified_app_2:1336358433946861649> por aqui. Minha equipe trabalha cada vez mais para ter mais comandos! Veja meus comandos com **'/'**.", "Sou o ${botName} e manjo quando o assunto é utilidades e ferramentas. Para ver o que eu posso fazer, só digitar **'/'** ou clicar no botão aqui em baixo!"]
+// textos
+
+const getLocalizedTexts = (lang, guildName, channelName, clientUsername) => {
+    const isPtBr = lang === 'pt_BR';
+    const botName = "Binder's Server Tools";
+    const verifiedEmojis = "<:verified_app_1:1336358365479305366><:verified_app_2:1336358433946861649>";
+
+    const greetings = {
+        en_US: ['Hey, ${displayName}!', 'Hello, ${displayName}!', 'Hi there, ${displayName}!', 'Greetings, ${displayName}!', 'What\'s up, ${displayName}?'],
+        pt_BR: ['<:mencao:1393999045248417924> E aí, ${displayName}!', '<:mencao:1393999045248417924> Fala tu, ${displayName}!', '<:mencao:1393999045248417924> Opa opa, ${displayName} chegou!', '<:mencao:1393999045248417924> Salve, ${displayName}!', '<:mencao:1393999045248417924> Como tamo, ${displayName}?']
+    };
+
+    const descriptions = {
+        en_US: `I'm ${botName} ${verifiedEmojis}, here to help you and provide utilities for your server. To use my commands, just type **'/'** and look for the desired command.`,
+        pt_BR: `Eu sou o ${botName} ${verifiedEmojis} e tô aqui pra dar aquela força no seu servidor! Eu tenho utilidades e posso ser integrado em diferentes plataformas. Digita **'/'** e bora ver o que dá pra fazer.`
+    };
+
+    return {
+        greeting: greetings[lang][Math.floor(Math.random() * greetings[lang].length)],
+        description: descriptions[lang],
+        tos_welcome_title: isPtBr ? `<:novato:1394085774567276614> Boas-vindas!` : `<:novato:1394085774567276614> Welcome!`,
+        tos_update_title: isPtBr ? `<:anuncio:1394142606535033017> Termos Atualizados!` : `<:anuncio:1394142606535033017> Terms Updated!`,
+        tos_welcome_desc: isPtBr ? `Prazer em te conhecer, sou o ${clientUsername}! Para começarmos, preciso que você leia e aceite nossos Termos clicando no botão abaixo.` : `Nice to meet you, I'm ${clientUsername}! To get started, please read and accept our Terms by clicking the button below.`,
+        tos_update_desc: isPtBr ? `Olá! Nossos termos foram atualizados. Por favor, leia e aceite a nova versão para continuar.` : `Hello! Our terms have been updated. Please read and accept the new version to continue.`,
+        dm_cant_speak: isPtBr ? `Oi! Vi que você me mencionou lá no servidor "**${guildName}**", mas não consigo responder no canal #${channelName}. Se precisar, me chama em outro canal ou cola no meu servidor de suporte!` : `Hello! I saw you mentioned me in the "**${guildName}**" server, but I can't reply in the #${channelName} channel. Try another channel or visit my support server!`,
+        dm_generic: isPtBr ? 'Olá! Para ver meus comandos e funções, por favor me use em um servidor. É só me adicionar e digitar `/`!' : 'Hello! To see my commands and functions, please use me in a server. Just add me and type `/`!',
+        no_embed_tip: isPtBr ? `\n\n<:linha:1393980037715333232> Me dê a permissão de \`Inserir Links\` para deixar tudo mais bonitinho!` : `\n\n<:linha:1393980037715333232> Give me the \`Embed Links\` permission to make everything look nicer!`,
+        button_commands: isPtBr ? 'Ver comandos' : 'View Commands',
+        button_website: isPtBr ? 'Site' : 'Website',
+        button_support: isPtBr ? 'Suporte' : 'Support',
+        button_tos_start: isPtBr ? 'Vamos lá!' : 'Let\'s go!',
+    };
 };
 
-const createTosStartButton = (lang, authorId) => {
-    const label = lang === 'pt_BR' ? 'Vamos lá!' : 'Let\'s go!';
-    const button = new ButtonBuilder().setCustomId(`start_tos_${authorId}`).setLabel(label).setStyle(ButtonStyle.Secondary).setEmoji('<:carta:1394142002404135003>');
-    return new ActionRowBuilder().addComponents(button);
-};
 const createMentionButtons = (lang, authorId) => {
     const isPtBr = lang === 'pt_BR';
-    const buttonLabels = { commands: isPtBr ? 'Ver comandos' : 'View Commands', website: isPtBr ? 'Site' : 'Website', support: isPtBr ? 'Suporte' : 'Support' };
-    const commandsButton = new ButtonBuilder().setCustomId(`show_help_menu_${authorId}`).setLabel(buttonLabels.commands).setStyle(ButtonStyle.Secondary).setEmoji('<:informacao:1393822533454921869>');
-    const websiteButton = new ButtonBuilder().setLabel(buttonLabels.website).setStyle(ButtonStyle.Link).setURL('https://binders.carrd.co/').setEmoji('<:internet_:1393819535886258237>');
-    const supportButton = new ButtonBuilder().setLabel(buttonLabels.support).setStyle(ButtonStyle.Link).setURL('https://dsc.gg/bindersdc').setEmoji('<:support:1393820810434576434>');
-    const topggButton = new ButtonBuilder().setLabel('Top.gg').setStyle(ButtonStyle.Link).setURL('https://top.gg/bot/1310336375261892608/').setEmoji('<:bot:1393821258851946606>');
+    const buttonLabels = {
+        commands: isPtBr ? 'Ver comandos' : 'View Commands',
+        website: isPtBr ? 'Site' : 'Website',
+        support: isPtBr ? 'Suporte' : 'Support'
+    };
+    const commandsButton = new ButtonBuilder().setCustomId(`show_help_menu_${authorId}`).setLabel(buttonLabels.commands).setEmoji('<:informacao:1393822533454921869>').setStyle(ButtonStyle.Secondary);
+    const websiteButton = new ButtonBuilder().setLabel(buttonLabels.website).setEmoji('<:internet_:1393819535886258237>').setStyle(ButtonStyle.Link).setURL('https://binders.carrd.co/');
+    const supportButton = new ButtonBuilder().setLabel(buttonLabels.support).setEmoji('<:support:1393820810434576434>').setStyle(ButtonStyle.Link).setURL('https://dsc.gg/bindersdc');
+    const topggButton = new ButtonBuilder().setLabel('Top.gg').setEmoji('<:bot:1393821258851946606>').setStyle(ButtonStyle.Link).setURL('https://top.gg/bot/1310336375261892608/');
     return new ActionRowBuilder().addComponents(commandsButton, websiteButton, supportButton, topggButton);
 };
 
@@ -35,91 +59,61 @@ module.exports = {
     async execute(message, client) {
         if (message.author.bot) return;
 
-        // --- LÓGICA DE DM PRIMEIRO ---
+        const lang = getLanguage(message);
+        const texts = getLocalizedTexts(lang, message.guild?.name, message.channel?.name, client.user.username);
+
         if (!message.inGuild()) {
-            const lang = getLanguage(message);
-            const isPtBr = lang === 'pt_BR';
-
-            const dmEmbed = await createEmbed(message, {
-                title: isPtBr ? '👋 Olá! Me chamou?' : '👋 Hello! Did you call me?',
-                description: isPtBr 
-                    ? 'Eu sou um bot que funciona melhor em servidores! Me adicione a um para ter acesso a todos os meus comandos e funcionalidades.'
-                    : 'I\'m a bot that works best in servers! Please add me to one to get access to all my commands and features.',
-            });
-
-            const dmRow = new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setLabel(isPtBr ? 'Me adicione ao seu Servidor' : 'Add me to your Server').setEmoji('🔗').setStyle(ButtonStyle.Link).setURL(`https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot%20applications.commands`),
-                new ButtonBuilder().setLabel(isPtBr ? 'Servidor de Suporte' : 'Support Server').setEmoji('<:support:1393820810434576434>').setStyle(ButtonStyle.Link).setURL('https://dsc.gg/bindersdc')
-            );
-
-            return message.channel.send({ embeds: [dmEmbed], components: [dmRow] });
+            return message.channel.send({ content: texts.dm_generic });
         }
         
-        // --- LÓGICA DE SERVIDOR ---
         if (message.type === MessageType.Reply || !message.mentions.users.has(client.user.id)) {
             return;
         }
 
         const userData = getUser(message.author.id);
-        let lang = getLanguage(message);
-        const showLangDisclaimer = userData.language === 'lang_auto';
-        if (showLangDisclaimer) lang = 'pt_BR';
-        const isPtBr = lang === 'pt_BR';
-        
         const botPermissions = message.guild.members.me.permissionsIn(message.channel);
+        
         if (!botPermissions.has(PermissionsBitField.Flags.SendMessages)) {
              try {
-                const dmMessage = isPtBr ? `Oi! Vi que você me mencionou lá no servidor "**${message.guild.name}**", mas não consigo responder no canal #${message.channel.name}. Se precisar, me chama em outro canal ou cola no meu servidor de suporte!` : `Hello! I saw you mentioned me in the "**${message.guild.name}**" server, but I can't reply in the #${message.channel.name} channel. Try another channel or visit my support server!`;
                 const dmRow = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setLabel(isPtBr ? 'Site' : 'Website').setEmoji('<:internet_:1393819535886258237>').setStyle(ButtonStyle.Link).setURL('https://binders.carrd.co/'),
-                    new ButtonBuilder().setLabel(isPtBr ? 'Suporte' : 'Support').setEmoji('<:support:1393820810434576434>').setStyle(ButtonStyle.Link).setURL('https://dsc.gg/bindersdc')
+                    new ButtonBuilder().setLabel(texts.button_website).setEmoji('<:internet_:1393819535886258237>').setStyle(ButtonStyle.Link).setURL('https://binders.carrd.co/'),
+                    new ButtonBuilder().setLabel(texts.button_support).setEmoji('<:support:1393820810434576434>').setStyle(ButtonStyle.Link).setURL('https://dsc.gg/bindersdc')
                 );
-                await message.author.send({ content: dmMessage, components: [dmRow] });
+                await message.author.send({ content: texts.dm_cant_speak, components: [dmRow] });
             } catch (error) {
-                console.log(`[Menção] Não consegui responder no canal #${message.channel.name} nem no PV de ${message.author.tag}.`);
+                console.log(`[menção] falha ao enviar dm para ${message.author.tag}.`);
             }
             return;
         }
         
-        const canUseEmojis = botPermissions.has(PermissionsBitField.Flags.UseExternalEmojis);
         const canSendEmbeds = botPermissions.has(PermissionsBitField.Flags.EmbedLinks);
         const canReadHistory = botPermissions.has(PermissionsBitField.Flags.ReadMessageHistory);
-        
+        let responsePayload;
+
         if (userData.tosVersion < currentTosVersion) {
             const isFirstTime = userData.tosVersion === 0;
-            const title = isFirstTime ? (isPtBr ? `<:novato:1394085774567276614> Boas-vindas!` : `<:novato:1394085774567276614> Welcome!`) : (isPtBr ? `<:anuncio:1394142606535033017> Termos Atualizados!` : `<:anuncio:1394142606535033017> Terms Updated!`);
-            const description = isFirstTime ? (isPtBr ? `Prazer em te conhecer, sou o ${client.user.username}! Para começarmos, preciso que você leia e aceite nossos Termos clicando no botão abaixo.` : `Nice to meet you, I'm ${client.user.username}! To get started, please read and accept our Terms by clicking the button below.`) : (isPtBr ? `Olá! Nossos termos foram atualizados. Por favor, leia e aceite a nova versão para continuar.` : `Hello! Our terms have been updated. Please read and accept the new version to continue.`);
-            const tosButtonRow = createTosStartButton(lang, message.author.id, canUseEmojis);
-            let responsePayload = { components: [tosButtonRow] };
+            const title = isFirstTime ? texts.tos_welcome_title : texts.tos_update_title;
+            const description = isFirstTime ? texts.tos_welcome_desc : texts.tos_update_desc;
+            const tosButtonRow = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`start_tos_${message.author.id}`).setLabel(texts.button_tos_start).setEmoji('<:carta:1394142002404135003>').setStyle(ButtonStyle.Secondary));
+            
+            responsePayload = { components: [tosButtonRow] };
             if (canSendEmbeds) {
-                const welcomeEmbed = await createEmbed(message, { title, description });
-                responsePayload.embeds = [welcomeEmbed];
+                responsePayload.embeds = [await createEmbed(message, { title, description })];
             } else {
                 responsePayload.content = `## ${title}\n${description}`;
             }
-            if (canReadHistory) { return message.reply(responsePayload); } 
-            else { return message.channel.send(responsePayload); }
-        }
-
-        const displayName = message.member ? message.member.displayName : message.author.username;
-        const title = greetings[lang][Math.floor(Math.random() * greetings[lang].length)].replace('${displayName}', displayName);
-        const description = descriptions[lang][Math.floor(Math.random() * descriptions[lang].length)].replace('${botName}', "Binder's Server Tools");
-        const row = createMentionButtons(lang, message.author.id, canUseEmojis);
-        let responsePayload = { components: [row] };
-
-        if (canSendEmbeds) {
-            const embed = await createEmbed(message, { title: title, description: description });
-            if (showLangDisclaimer) {
-                const disclaimerText = `• ${isPtBr ? 'O Discord não informa seu idioma em menções. Respondi em Português por padrão.' : 'Discord doesn\'t share your language on mentions. I\'ve defaulted to English.'}`;
-                const originalFooter = embed.data.footer;
-                embed.setFooter({ text: `${originalFooter.text} ${disclaimerText}`, iconURL: originalFooter.icon_url });
-            }
-            responsePayload.embeds = [embed];
         } else {
-            let content = `## ${title}\n${description}`;
-            if (showLangDisclaimer) { content += isPtBr ? `\n\n-# O Discord não informa seu idioma em menções. Respondi em Português por padrão.` : `\n\n-# Discord doesn't inform me of your language on mentions. I\'ve defaulted to English.`; }
-            const noEmbedTip = isPtBr ? `\n\n<:linha:1393980037715333232> Me dê a permissão de \`Inserir Links\` para deixar tudo mais bonitinho!` : `\n\n<:linha:1393980037715333232> Give me the \`Embed Links\` permission to make everything look nicer!`;
-            responsePayload.content = content + noEmbedTip;
+            const displayName = message.member ? message.member.displayName : message.author.username;
+            const title = texts.greeting.replace('${displayName}', displayName);
+            const description = texts.description.replace('${botName}', "Binder's Server Tools");
+            const row = createMentionButtons(lang, message.author.id);
+            responsePayload = { components: [row] };
+
+            if (canSendEmbeds) {
+                responsePayload.embeds = [await createEmbed(message, { title, description })];
+            } else {
+                responsePayload.content = `## ${title}\n${description}${texts.no_embed_tip}`;
+            }
         }
         
         if (canReadHistory) { await message.reply(responsePayload); } 
