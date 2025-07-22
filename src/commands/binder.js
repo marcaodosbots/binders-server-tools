@@ -28,7 +28,7 @@ module.exports = {
         const subCommandName = interaction.options.getSubcommand();
         
         try {
-            const subCommandPath = path.join(process.cwd(), 'src', 'subcommands', 'binder', 'Personalizacao', `${subCommandName}.js`);
+            const subCommandPath = path.join(process.cwd(), 'src', 'subcommands', 'binder', 'personalizacao', `${subCommandName}.js`);
             const subCommand = require(subCommandPath);
             await subCommand.execute(interaction, client);
         } catch (error) {
