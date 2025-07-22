@@ -23,6 +23,7 @@
     "url": "https://github.com/marcaodosbots/binders-server-tools/issues"
   },
   "dependencies": {
+    "express": "^4.19.2",
     "better-sqlite3": "^11.1.2",
     "discord.js": "^14.15.3",
     "dotenv": "^16.4.5"
