@@ -1,0 +1,5 @@
+# This directory is a Syncthing folder marker.
+# Do not delete.
+
+folderID: trnzq-fnygm
+created: 2025-07-21T21:42:42-03:00
