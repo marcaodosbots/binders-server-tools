@@ -87,3 +87,13 @@ console.log(`[CARREGADOR] Carregados ${client.selects.size} handlers de menu.`);
 
 // liga o bot
 client.login(process.env.DISCORD_TOKEN);
+
+const { sendLifecycleLog } = require('./src/utils/lifecycleLogger.js');
+
+process.on('SIGINT', () => {
+    sendLifecycleLog('🔴 Bot Desligando...', 'Red');
+    // da um tempinho pro webhook enviar antes de fechar
+    setTimeout(() => process.exit(0), 1000);
+});
+
+console.logs("oloko")
