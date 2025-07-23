@@ -53,8 +53,8 @@ module.exports = {
         }
         
         const categoryMap = {
-            'idioma': 'Personalizacao',
-            'info': 'Bot',
+            'idioma': 'personalizacao',
+            'info': 'bot',
         };
         const category = categoryMap[subCommandName];
 
