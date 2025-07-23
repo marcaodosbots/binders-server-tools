@@ -9,6 +9,7 @@ async function createEmbed(context, options = {}) {
     // junta o nosso padrão com as opções q o comando mandou
     const embedConfig = { ...defaultConfig, ...options };
     
+    // descobre quem é o user da interação/msg
     const userSource = context.user || context.author;
     const clientUser = context.client.user;
     const targetUser = options.targetUser || userSource;
@@ -17,9 +18,9 @@ async function createEmbed(context, options = {}) {
         .setColor(embedConfig.color)
         .setTimestamp();
 
-    // logica de contexto pra montar o embed certo em server ou dm
+    // logica de contexto pra montar o embed certo em server, dm ou app de usuário
     if (context.guild) {
-        // se a interação for num servidor, monta o embed completo
+        // se a interação tiver as infos do servidor, monta o embed completo
         const member = await context.guild.members.fetch(targetUser.id).catch(() => null);
         const displayName = member ? member.displayName : targetUser.username;
 
@@ -32,7 +33,7 @@ async function createEmbed(context, options = {}) {
             iconURL: context.guild.iconURL({ dynamic: true }),
         });
     } else {
-        // se for numa dm ou comando de app, monta um embed mais simples
+        // se não tiver (é dm ou comando de app), monta um embed mais simples
         embed.setAuthor({
             name: targetUser.tag,
             iconURL: targetUser.displayAvatarURL(),
@@ -52,6 +53,9 @@ async function createEmbed(context, options = {}) {
     }
     if (options.thumbnail) {
         embed.setThumbnail(options.thumbnail);
+    }
+    if (options.fields) {
+        embed.addFields(options.fields);
     }
 
     return embed;

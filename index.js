@@ -95,5 +95,3 @@ process.on('SIGINT', () => {
     // da um tempinho pro webhook enviar antes de fechar
     setTimeout(() => process.exit(0), 1000);
 });
-
-console.logs("oloko")
