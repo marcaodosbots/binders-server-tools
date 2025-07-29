@@ -1,5 +1,5 @@
 const { Events, ActivityType } = require('discord.js');
-
+const { sendLifecycleLog } = require('../utils/lifecycleLogger.js');
 // a lista inicial de status, vc pode botar todos os seus aqui
 /*
 let statusList = [
@@ -48,20 +48,34 @@ let statusList = [
     '❓ Use o /ajuda!'
 ];
 */
-const { sendLifecycleLog } = require('../utils/lifecycleLogger.js');
 let statusList = [
     '🛠 Estamos deixando as coisas mais incríveis! Em manuntenção!'
-    ];
+];
 
 module.exports = {
     name: Events.ClientReady,
-    once: true, // só roda uma vez, quando o bot liga
+    once: true,
     
-    execute(client) {
-        // avisa no canal de logs
+    async execute(client) {
         sendLifecycleLog('🟢 Bot Online!', 'Green');
         console.log(`[Logado] ${client.user.tag}`);
 
+        // --- VERIFICADOR DE COMANDOS NA API ---
+        try {
+            const commands = await client.application.commands.fetch();
+            let subcommandCount = 0;
+            
+            commands.forEach(cmd => {
+                // AQUI A CORREÇÃO: trocamos o nome gigante pelo número '1'
+                const subcommands = cmd.options?.filter(opt => opt.type === 1) || [];
+                subcommandCount += subcommands.length;
+            });
+
+            console.log(`[API] Encontrados ${commands.size} comandos e ${subcommandCount} subcomandos registrados.`);
+        } catch (error) {
+            console.error('[API] Falha ao verificar comandos:', error);
+        }
+        
         // ---- LÓGICA DO STATUS ROTATIVO ----
         const shuffle = (array) => {
             let currentIndex = array.length, randomIndex;
@@ -69,8 +83,7 @@ module.exports = {
             while (currentIndex != 0) {
                 randomIndex = Math.floor(Math.random() * currentIndex);
                 currentIndex--;
-                [newArray[currentIndex], newArray[randomIndex]] = [
-                    newArray[randomIndex], newArray[currentIndex]];
+                [newArray[currentIndex], newArray[randomIndex]] = [newArray[randomIndex], newArray[currentIndex]];
             }
             return newArray;
         };
@@ -86,6 +99,6 @@ module.exports = {
             const newStatus = shuffledStatus[statusIndex];
             client.user.setActivity(newStatus, { type: ActivityType.Custom });
             statusIndex++;
-        }, 30000); // 30 segundos
+        }, 30000);
     },
 };

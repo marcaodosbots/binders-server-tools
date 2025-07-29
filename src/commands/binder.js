@@ -3,10 +3,11 @@ const tosCheck = require('../utils/tosCheck.js');
 const path = require('node:path');
 const interactionErrorHandler = require('../utils/interactionErrorHandler.js');
 const devSubcommandHandler = require('../utils/devSubcommandHandler.js');
+const { getUser } = require('../../database/db.js');
 
 // lista de subcomandos que ainda estão em desenvolvimento
 const subcommandsInDevelopment = [
-    'info'
+    'info', 
 ];
 
 module.exports = {
@@ -25,7 +26,6 @@ module.exports = {
                 .setName('idioma')
                 .setNameLocalizations({ 'en-US': 'language' })
                 .setDescription('Personalização ❯ Altera o seu idioma de preferência.')
-
                 .setDescriptionLocalizations({
                     'en-US': 'Personalization ❯ Changes your preferred language.',
                     'pt-BR': 'Personalização ❯ Altera o seu idioma de preferência.',
@@ -35,7 +35,6 @@ module.exports = {
             subcommand
                 .setName('info')
                 .setDescription('Bot ❯ Mostra informações detalhadas sobre mim.')
-
                 .setDescriptionLocalizations({
                     'en-US': 'Bot ❯ Displays detailed information about me.',
                     'pt-BR': 'Bot ❯ Mostra informações detalhadas sobre mim.',
@@ -48,13 +47,19 @@ module.exports = {
         
         const subCommandName = interaction.options.getSubcommand();
 
+        // --- VERIFICAÇÃO DE COMANDO EM DESENVOLVIMENTO ---
         if (subcommandsInDevelopment.includes(subCommandName)) {
-            return devSubcommandHandler.execute(interaction);
+            const userData = getUser(interaction.user.id);
+            
+            if (userData.isDeveloper !== 1) {
+                return devSubcommandHandler.execute(interaction);
+            }
+
         }
         
         const categoryMap = {
-            'idioma': 'Personalizacao',
-            'info': 'Bot',
+            'idioma': 'personalizacao',
+            'info': 'bot',
         };
         const category = categoryMap[subCommandName];
 
@@ -68,7 +73,7 @@ module.exports = {
             const subCommand = require(subCommandPath);
             await subCommand.execute(interaction, client);
         } catch (error) {
-            console.error(`Erro ao carregar o subcomando '${subCommandName}':`, error);
+            console.error(`Erro ao carregar ou executar o subcomando '${subCommandName}':`, error);
             return interactionErrorHandler.execute(interaction, error);
         }
     },

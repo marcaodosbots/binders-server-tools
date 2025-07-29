@@ -4,11 +4,16 @@ const tosCheck = require('../utils/tosCheck.js');
 const checkInteractionOwnership = require('../utils/interactionOwnership.js');
 const interactionErrorHandler = require('../utils/interactionErrorHandler.js');
 const devCommandHandler = require('../utils/devCommandHandler.js');
+const { logInteraction } = require('../utils/interactionLogger.js'); // importa o dedo-duro
 
 module.exports = {
     name: Events.InteractionCreate,
     once: false,
+    
     async execute(interaction, client) {
+        
+        await logInteraction(interaction);
+        
         if (!interaction.inGuild() || interaction.user.bot) return;
 
         const userData = getUser(interaction.user.id);
