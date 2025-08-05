@@ -2,14 +2,11 @@
 const { WebhookClient, EmbedBuilder } = require('discord.js');
 
 async function logInteraction(interaction) {
-    // se o webhook n estiver configurado, a gente so ignora
     if (!process.env.WEBHOOK_INTERACOES) return;
-
     try {
         const webhookClient = new WebhookClient({ url: process.env.WEBHOOK_INTERACOES });
         let commandString = 'N/A';
 
-        // monta o nome completo do comando (ex: /binder info)
         if (interaction.isChatInputCommand()) {
             commandString = `/${interaction.commandName}`;
             if (interaction.options.getSubcommand(false)) {
@@ -20,36 +17,43 @@ async function logInteraction(interaction) {
         }
         
         const embed = new EmbedBuilder()
-            .setColor('#6797BF') // a cor que vc pediu
-            .setAuthor({
-                name: `${interaction.user.tag} (${interaction.user.id})`,
-                iconURL: interaction.user.displayAvatarURL(),
-            })
+            .setColor('#6797BF')
+            .setAuthor({ name: `${interaction.user.tag} (${interaction.user.id})`, iconURL: interaction.user.displayAvatarURL() })
             .setTitle('Nova Interação Recebida')
             .addFields(
-                { name: 'Tipo', value: interaction.type.toString(), inline: true },
-                { name: 'Comando', value: `\`${commandString}\``, inline: true }
+                { name: 'Comando', value: `\`${commandString}\`` },
+                { name: 'Local', value: interaction.channel ? `<#${interaction.channel.id}>` : 'DM', inline: true },
+                { name: 'Servidor', value: interaction.guild ? `${interaction.guild.name}` : 'DM', inline: true }
             )
-            .setFooter({
-                text: interaction.guild ? interaction.guild.name : 'DM / App de Usuário',
-                iconURL: interaction.guild ? interaction.guild.iconURL() : client.user.displayAvatarURL(),
-            })
+            .setFooter({ text: `Client ID: ${interaction.client.user.id}` })
             .setTimestamp();
         
-        // se a interação foi num canal, adiciona o link
-        if (interaction.channel) {
-            embed.addFields({ name: 'Local', value: `<#${interaction.channel.id}>` });
-        }
-
-        await webhookClient.send({
-            username: 'Binder\'s Interactions',
-            avatarURL: interaction.client.user.displayAvatarURL(),
-            embeds: [embed],
-        });
-
+        await webhookClient.send({ username: 'Binder\'s Interactions', avatarURL: interaction.client.user.displayAvatarURL(), embeds: [embed] });
     } catch (error) {
         console.error('[interactionLogger] Falha ao enviar log de interação:', error.message);
     }
 }
 
-module.exports = { logInteraction };
+// A NOVA FUNÇÃO ESTÁ AQUI
+async function logEval(interaction, code, output) {
+    if (!process.env.WEBHOOK_INTERACOES) return;
+    try {
+        const webhookClient = new WebhookClient({ url: process.env.WEBHOOK_INTERACOES });
+
+        const embed = new EmbedBuilder()
+            .setColor('#FFD700') // cor dourada pra destacar
+            .setAuthor({ name: `${interaction.user.tag} usou /developers eval`, iconURL: interaction.user.displayAvatarURL() })
+            .addFields(
+                { name: 'Input (Código)', value: `\`\`\`js\n${code.slice(0, 1000)}\n\`\`\`` },
+                { name: 'Output (Resultado)', value: `\`\`\`js\n${output.slice(0, 1000)}\n\`\`\`` }
+            )
+            .setFooter({ text: `Executado em: ${interaction.guild ? interaction.guild.name : 'DM'}` })
+            .setTimestamp();
+        
+        await webhookClient.send({ username: 'Binder\'s Eval Monitor', avatarURL: interaction.client.user.displayAvatarURL(), embeds: [embed] });
+    } catch (error) {
+        console.error('[interactionLogger] Falha ao enviar log de eval:', error.message);
+    }
+}
+
+module.exports = { logInteraction, logEval };

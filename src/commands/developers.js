@@ -4,28 +4,17 @@ const { getUser } = require('../../database/db.js');
 const createEmbed = require('../utils/createEmbed.js');
 const getLanguage = require('../utils/getLanguage.js');
 const util = require('node:util');
+const { logEval } = require('../utils/interactionLogger.js'); // importa o novo logger de eval
 
-// central de textos pra deixar o código limpo
-const texts = {
-    accessDenied: {
-        title: {
-            'pt_BR': '<:selodev1:1397393789198532648> Acesso Negado',
-            'en_US': '<:selodev1:1397393789198532648> Access Denied',
-        },
-        description: {
-            'pt_BR': ['<:bussola:1397394024113115286> Você está perdido? Esta área é restrita apenas para desenvolvedores.', 'Opps, lugar errado! Apenas a minha equipe pode usar este comando.'],
-            'en_US': ['<:bussola:1397394024113115286> Are you lost? This area is restricted to developers only.', 'Oops, wrong place! Only my team can use this command.'],
-        }
+// textos para a resposta de acesso negado
+const accessDeniedTexts = {
+    title: {
+        'pt_BR': '<:bussola:1397394024113115286> Você está perdido? ',
+        'en_US': '<:bussola:1397394024113115286> Are you lost? ',
     },
-    eval: {
-        title: {
-            'pt_BR': '<:ferramenta1:1397394095697301589> Eval Executado',
-            'en_US': '<:ferramenta1:1397394095697301589> Eval Executed',
-        },
-        fields: {
-            code: { 'pt_BR': 'Código Executado', 'en_US': 'Executed Code' },
-            output: { 'pt_BR': 'Saída', 'en_US': 'Output' },
-        }
+    description: {
+        'pt_BR': ['Esta área é restrita apenas para desenvolvedores.', 'Apenas a minha equipe pode usar este comando, foi mal!'],
+        'en_US': ['This area is restricted to developers only.', 'Only my team can use this command, haha!'],
     }
 };
 
@@ -64,9 +53,9 @@ module.exports = {
 
         // -- trava de segurança principal --
         if (userData.isDeveloper !== 1) {
-            const randomDesc = texts.accessDenied.description[lang][Math.floor(Math.random() * texts.accessDenied.description[lang].length)];
+            const randomDesc = accessDeniedTexts.description[lang][Math.floor(Math.random() * accessDeniedTexts.description[lang].length)];
             const deniedEmbed = await createEmbed(interaction, {
-                title: texts.accessDenied.title[lang],
+                title: accessDeniedTexts.title[lang],
                 description: randomDesc,
             });
             return interaction.reply({ embeds: [deniedEmbed], flags: [MessageFlags.Ephemeral] });
@@ -87,15 +76,19 @@ module.exports = {
                 output = error.stack || error.toString();
             }
 
-            if (output.length > 4000) {
-                output = output.substring(0, 4000) + '...';
+            // chama o logger de eval ANTES de cortar o output
+            await logEval(interaction, codeToEval, output);
+
+            // limita o output pra n quebrar a embed de resposta pro usuário
+            if (output.length > 1000) {
+                output = output.substring(0, 1000) + '...';
             }
 
             const evalEmbed = await createEmbed(interaction, {
-                title: texts.eval.title[lang],
+                title: lang === 'pt_BR' ? '<:ferramenta1:1397394095697301589> Eval Executado' : '<:ferramenta1:1397394095697301589> Eval Executed',
                 fields: [
-                    { name: texts.eval.fields.code[lang], value: `\`\`\`js\n${codeToEval.slice(0, 1000)}\n\`\`\`` },
-                    { name: texts.eval.fields.output[lang], value: `\`\`\`js\n${output}\n\`\`\`` }
+                    { name: lang === 'pt_BR' ? 'Código Executado' : 'Executed Code', value: `\`\`\`js\n${codeToEval.slice(0, 1000)}\n\`\`\`` },
+                    { name: 'Output', value: `\`\`\`js\n${output}\n\`\`\`` }
                 ]
             });
 
