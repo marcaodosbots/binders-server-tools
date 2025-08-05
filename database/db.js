@@ -56,8 +56,6 @@ function runMigrations() {
             }
         }
 
-        // if (currentVersion < 3) { ... } -> proxima migração viria aqui
-
         // atualiza a versão do db no final de tudo
         db.prepare('INSERT OR REPLACE INTO db_meta (key, value) VALUES (?, ?)').run('version', DB_VERSION);
     })();

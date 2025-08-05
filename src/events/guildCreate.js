@@ -3,11 +3,10 @@ const { getGuild, updateGuild } = require('../../database/db.js');
 const createEmbed = require('../utils/createEmbed.js');
 const { logGuildJoin } = require('../utils/joinLeaveLogger.js');
 
-// função que gera os textos pra n poluir o código principal
 const getLocalizedTexts = (lang, inviter) => {
     const isPtBr = lang === 'pt_BR';
     const inviterTag = inviter ? inviter.tag : (isPtBr ? 'alguém' : 'someone');
-    const welcomeEmoji = '<:novato:1394085774567276614>'; // emoji definido aqui
+    const welcomeEmoji = '<:novato:1394085774567276614>';
 
     return {
         dm_title: isPtBr ? `${welcomeEmoji} Obrigado por me adicionar!` : `${welcomeEmoji} Thanks for adding me!`,
@@ -19,7 +18,6 @@ const getLocalizedTexts = (lang, inviter) => {
     };
 };
 
-// função que acha o melhor canal pra mandar a msg de boas-vindas
 const findChannelToSend = (guild, client) => {
     if (guild.systemChannel && guild.systemChannel.permissionsFor(client.user).has([PermissionsBitField.Flags.SendMessages, PermissionsBitField.Flags.EmbedLinks])) return guild.systemChannel;
     return guild.channels.cache
@@ -32,8 +30,8 @@ module.exports = {
     name: Events.GuildCreate,
     async execute(guild, client) {
         console.log(`[guild] entrei em: ${guild.name} (${guild.id})`);
-        // registra ou atualiza o status do servidor no db para inGuild = 1
-        getGuild(guild);
+        
+        getGuild(guild, 'guildCreate');
 
         let inviter = null;
         try {
@@ -45,7 +43,7 @@ module.exports = {
 
         let permaInvite = null;
         try {
-            const channel = findChannelToSend(guild, client); // usa a mesma lógica pra achar canal
+            const channel = findChannelToSend(guild, client);
             if (channel && channel.permissionsFor(client.user).has(PermissionsBitField.Flags.CreateInstantInvite)) {
                 const invite = await channel.createInvite({ maxAge: 0, maxUses: 0, reason: 'Convite permanente para o desenvolvedor' });
                 permaInvite = invite.url;
@@ -53,24 +51,21 @@ module.exports = {
             }
         } catch (e) { console.error(`[guildCreate] falha ao criar convite para ${guild.name}.`); }
 
-        // manda o log pro webhook de qualquer jeito
         await logGuildJoin(guild, inviter, permaInvite);
         
         const lang = guild.preferredLocale === 'pt-BR' ? 'pt_BR' : 'en_US';
         const texts = getLocalizedTexts(lang, inviter);
 
-        // se a gente achou quem convidou, tenta a dm primeiro
         if (inviter) {
             const thankYouEmbed = await createEmbed({ guild, client, user: inviter }, { title: texts.dm_title, description: texts.dm_description });
             try {
                 await inviter.send({ embeds: [thankYouEmbed] });
-                return; // se a dm funcionou, o trabalho acabou
+                return;
             } catch (error) {
                 console.log(`[guildCreate] dm pra ${inviter.tag} fechada, tentando canal publico...`);
             }
         }
         
-        // se chegou aqui, ou a dm falhou, ou n achou o inviter. manda msg publica.
         const channelToSend = findChannelToSend(guild, client);
         if (!channelToSend) {
             return console.log('[guildCreate] n achei canal pra mandar msg de boas-vindas.');
