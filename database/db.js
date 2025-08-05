@@ -1,66 +1,74 @@
-// database/db.js
 const Database = require('better-sqlite3');
 const path = require('node:path');
 const fs = require('node:fs');
 
+// --- conexão com o db ---
 const dbPath = path.join(__dirname, 'main.db');
 const db = new Database(dbPath);
 
 // --- sistema de migração ---
-// a gente sobe esse número toda vez q fizer uma mudança na estrutura do db
-const DB_VERSION = 1;
+// a gente sobe esse número toda vez q fizer uma mudança grande na estrutura do db
+const DB_VERSION = 2;
 
 function runMigrations() {
-    console.log('[db] verificando a necessidade de migrações...');
+    console.log('[db] verificando necessidade de migrações...');
     
     db.exec('CREATE TABLE IF NOT EXISTS db_meta (key TEXT PRIMARY KEY, value INTEGER)');
     let currentVersion = db.prepare('SELECT value FROM db_meta WHERE key = ?').get('version')?.value || 0;
 
     if (currentVersion >= DB_VERSION) {
-        console.log('[db] seu banco de dados já está na versão mais recente.');
+        console.log('[db] o banco de dados já está na versão mais recente.');
         return;
     }
 
     console.log(`[db] versão atual: ${currentVersion}. versão alvo: ${DB_VERSION}. iniciando migração...`);
 
-    // --- lista de todas as migrações ---
-    if (currentVersion < 1) {
-        try {
-            console.log('[db migration v1] iniciando reforma da tabela users e remoção de ai_history...');
-            db.prepare('DROP TABLE IF EXISTS ai_history').run();
-            // adiciona cada coluna nova de forma segura. se já existir, ele ignora o erro.
-            db.prepare('ALTER TABLE users ADD COLUMN firstInteraction INTEGER').run();
-            db.prepare('ALTER TABLE users ADD COLUMN lastInteraction INTEGER').run();
-            db.prepare('ALTER TABLE users ADD COLUMN commandCount INTEGER DEFAULT 0').run();
-            db.prepare('ALTER TABLE users ADD COLUMN interactionCount INTEGER DEFAULT 0').run();
-            db.prepare('ALTER TABLE users ADD COLUMN last10Commands TEXT').run();
-            db.prepare('ALTER TABLE users ADD COLUMN timezone TEXT').run();
-            db.prepare('ALTER TABLE users ADD COLUMN bannedUntil INTEGER').run();
-            db.prepare('ALTER TABLE users ADD COLUMN canBeDMed INTEGER DEFAULT 1').run();
-            db.prepare('ALTER TABLE users ADD COLUMN voteCount INTEGER DEFAULT 0').run();
-            db.prepare('ALTER TABLE users ADD COLUMN profileColor TEXT').run();
-            console.log('[db migration v1] tabelas reformadas com sucesso.');
-        } catch (e) {
-            // a gente só ignora o erro se for de 'coluna duplicada', q é esperado
-            if (!e.message.includes('duplicate column name')) {
-                console.error('[db migration v1] falha na reforma:', e);
-                process.exit(1); // para o bot pra não corromper nada
+    db.transaction(() => {
+        // --- lista de todas as migrações ---
+        // cada 'if' é uma nova versão da 'reforma' do db
+        
+        if (currentVersion < 1) {
+            // v1: adiciona a coluna 'inGuild' em guilds
+            try {
+                db.prepare('ALTER TABLE guilds ADD COLUMN inGuild INTEGER DEFAULT 1').run();
+                console.log('[db migration v1] coluna "inGuild" adicionada em guilds.');
+            } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
+        }
+
+        if (currentVersion < 2) {
+            // v2: reforma da tabela 'users' e remoção de 'ai_history'
+            try {
+                db.prepare('DROP TABLE IF EXISTS ai_history').run();
+                const userColumns = [
+                    'firstInteraction INTEGER', 'lastInteraction INTEGER', 'commandCount INTEGER DEFAULT 0',
+                    'interactionCount INTEGER DEFAULT 0', 'last10Commands TEXT', 'timezone TEXT',
+                    'bannedUntil INTEGER', 'canBeDMed INTEGER DEFAULT 1', 'voteCount INTEGER DEFAULT 0', 'profileColor TEXT'
+                ];
+                for (const column of userColumns) {
+                    db.prepare(`ALTER TABLE users ADD COLUMN ${column}`).run();
+                }
+                console.log('[db migration v2] tabela "users" reformada e "ai_history" removida.');
+            } catch (e) {
+                if (!e.message.includes('duplicate column name')) {
+                    console.error('[db migration v2] falha critica na reforma:', e);
+                    process.exit(1); // para o bot pra não corromper nada
+                }
             }
         }
-    }
 
-    // atualiza a versão do db no final de tudo
-    db.prepare('INSERT OR REPLACE INTO db_meta (key, value) VALUES (?, ?)').run('version', DB_VERSION);
+        // if (currentVersion < 3) { ... } -> proxima migração viria aqui
+
+        // atualiza a versão do db no final de tudo
+        db.prepare('INSERT OR REPLACE INTO db_meta (key, value) VALUES (?, ?)').run('version', DB_VERSION);
+    })();
+    
     console.log('[db] migrações concluídas com sucesso.');
 }
 
-
 function initializeDatabase() {
     console.log('[db] verificando estrutura do banco de dados...');
-    
-    // a gente apaga a guilds pra recriar com a estrutura nova, como vc pediu
-    db.prepare('DROP TABLE IF EXISTS guilds').run();
 
+    // primeiro, a gente garante que as tabelas existem com uma estrutura MÍNIMA
     const createTablesStmt = `
         CREATE TABLE IF NOT EXISTS users (
             userId TEXT PRIMARY KEY,
@@ -72,7 +80,6 @@ function initializeDatabase() {
         );
         CREATE TABLE IF NOT EXISTS guilds (
             guildId TEXT PRIMARY KEY,
-            inGuild INTEGER DEFAULT 1,
             joinedAt INTEGER,
             permaInvite TEXT,
             antiraidEnabled INTEGER DEFAULT 0,
@@ -85,7 +92,7 @@ function initializeDatabase() {
     `;
     db.exec(createTablesStmt);
     
-    // chama a função de reforma
+    // depois, a gente chama a função de reforma pra adicionar as colunas que faltam
     runMigrations();
     
     console.log('[db] tabelas prontas.');
@@ -112,12 +119,15 @@ function getUser(userId) {
     }
     return user;
 }
+
 function updateUser(userId, column, value) {
     db.prepare(`UPDATE users SET ${column} = ? WHERE userId = ?`).run(value, userId);
 }
+
 function setLastKnownLocale(userId, locale) {
     updateUserLocale.run(locale, userId);
 }
+
 function getGuild(guild) {
     let guildData = selectGuild.get(guild.id);
     if (!guildData) {
@@ -129,10 +139,11 @@ function getGuild(guild) {
     }
     return guildData;
 }
+
 function updateGuild(guildId, column, value) {
     db.prepare(`UPDATE guilds SET ${column} = ? WHERE guildId = ?`).run(value, guildId);
 }
-// a função de backup fica aqui no final pra manter a organização
+
 function createDailyBackup() {
     const backupDir = path.join(__dirname, 'backups');
     if (!fs.existsSync(backupDir)) {
