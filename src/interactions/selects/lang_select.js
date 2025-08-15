@@ -28,7 +28,9 @@ const texts = {
 
 module.exports = {
     name: 'lang_select',
+    
     async execute(interaction, client) {
+        await interaction.deferUpdate();
         // segurança pra n deixar curioso clicar
         const isOwner = await checkInteractionOwnership(interaction);
         if (!isOwner) return;
@@ -59,6 +61,6 @@ module.exports = {
         );
 
         // edita a msg original com o embed de confirmação E o menu novo
-        return interaction.update({ embeds: [finalEmbed], components: [newLangMenu] });
+        return interaction.editReply({ embeds: [finalEmbed], components: [newLangMenu] });
     }
 };

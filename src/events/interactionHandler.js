@@ -4,23 +4,34 @@ const tosCheck = require('../utils/tosCheck.js');
 const checkInteractionOwnership = require('../utils/interactionOwnership.js');
 const interactionErrorHandler = require('../utils/interactionErrorHandler.js');
 const devCommandHandler = require('../utils/devCommandHandler.js');
-const { logInteraction } = require('../utils/interactionLogger.js'); // importa o dedo-duro
+const { logInteraction } = require('../utils/interactionLogger.js');
+const { trackInteraction } = require('../utils/analyticsHandler.js');
 
 module.exports = {
     name: Events.InteractionCreate,
     once: false,
     
     async execute(interaction, client) {
-        
-        await logInteraction(interaction);
-        
-        if (!interaction.inGuild() || interaction.user.bot) return;
+        // ignora interações de bots
+        if (interaction.user.bot) return;
 
-        const userData = getUser(interaction.user.id);
-        if (userData.language === 'lang_auto') {
-            setLastKnownLocale(interaction.user.id, interaction.locale);
+        // o dedo-duro e o cérebro de analytics agem primeiro, sempre
+        try {
+            await logInteraction(interaction);
+            await trackInteraction(interaction);
+        } catch (error) {
+            console.error('[FATAL] Erro nos handlers de log/analytics:', error);
+        }
+        
+        // se a interação for num servidor, a gente 'aprende' o idioma do usuário
+        if (interaction.inGuild()) {
+            const userData = getUser(interaction.user.id);
+            if (userData.language === 'lang_auto') {
+                setLastKnownLocale(interaction.user.id, interaction.locale);
+            }
         }
 
+        // --- roteador de comandos de barra (/) ---
         if (interaction.isChatInputCommand()) {
             const canProceed = await tosCheck(interaction);
             if (!canProceed) return; 
@@ -44,6 +55,7 @@ module.exports = {
             return;
         }
 
+        // --- roteador pra componentes (botão e menu) ---
         if (interaction.isButton() || interaction.isStringSelectMenu()) {
             const isOwner = await checkInteractionOwnership(interaction);
             if (!isOwner) return;
