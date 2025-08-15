@@ -12,10 +12,8 @@ module.exports = {
     once: false,
     
     async execute(interaction, client) {
-        // ignora interações de bots
         if (interaction.user.bot) return;
 
-        // o dedo-duro e o cérebro de analytics agem primeiro, sempre
         try {
             await logInteraction(interaction);
             await trackInteraction(interaction);
@@ -23,7 +21,6 @@ module.exports = {
             console.error('[FATAL] Erro nos handlers de log/analytics:', error);
         }
         
-        // se a interação for num servidor, a gente 'aprende' o idioma do usuário
         if (interaction.inGuild()) {
             const userData = getUser(interaction.user.id);
             if (userData.language === 'lang_auto') {
@@ -31,7 +28,6 @@ module.exports = {
             }
         }
 
-        // --- roteador de comandos de barra (/) ---
         if (interaction.isChatInputCommand()) {
             const canProceed = await tosCheck(interaction);
             if (!canProceed) return; 
@@ -41,7 +37,6 @@ module.exports = {
                 return interactionErrorHandler.execute(interaction, new Error(`Comando não encontrado: /${interaction.commandName}`));
             }
 
-            // checa se o COMANDO INTEIRO está em desenvolvimento
             if (command.inDevelopment) {
                 return devCommandHandler.execute(interaction);
             }
@@ -55,7 +50,6 @@ module.exports = {
             return;
         }
 
-        // --- roteador pra componentes (botão e menu) ---
         if (interaction.isButton() || interaction.isStringSelectMenu()) {
             const isOwner = await checkInteractionOwnership(interaction);
             if (!isOwner) return;
