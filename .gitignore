@@ -22,3 +22,7 @@ Thumbs.db
 webhook-server.js
 deploy.sh
 send-deploy-notice.js
+
+# Desenvolvimento 
+
+.vscode

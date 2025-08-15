@@ -4,12 +4,12 @@ const createEmbed = require('./createEmbed.js');
 
 const texts = {
     title: {
-        'pt_BR': '<:ferramenta1:1397394095697301589> Subcomando em Desenvolvimento',
-        'en_US': '<:ferramenta1:1397394095697301589> Subcommand in Development',
+        'pt_BR': '<:ferramenta1:1397394095697301589> Comando em Desenvolvimento',
+        'en_US': '<:ferramenta1:1397394095697301589> Command in Development',
     },
     description: {
-        'pt_BR': 'Este subcomando ainda está sendo construído e estará disponível em breve!\n\nFique de olho nas atualizações no nosso [servidor de suporte](https://discord.gg/Y2jJadbUmY).',
-        'en_US': 'This subcommand is still under construction and will be available soon!\n\nKeep an eye on the updates in our [support server](https://discord.gg/Y2jJadbUmY).',
+        'pt_BR': 'Este subcomando ainda está sendo construído e estará disponível em breve! Fique de olho nas atualizações no nosso [servidor de suporte](https://discord.gg/Y2jJadbUmY).',
+        'en_US': 'This subcommand is still under construction and will be available soon! Keep an eye on the updates in our [support server](https://discord.gg/Y2jJadbUmY).',
     }
 };
 

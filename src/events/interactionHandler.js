@@ -4,16 +4,28 @@ const tosCheck = require('../utils/tosCheck.js');
 const checkInteractionOwnership = require('../utils/interactionOwnership.js');
 const interactionErrorHandler = require('../utils/interactionErrorHandler.js');
 const devCommandHandler = require('../utils/devCommandHandler.js');
+const { logInteraction } = require('../utils/interactionLogger.js');
+const { trackInteraction } = require('../utils/analyticsHandler.js');
 
 module.exports = {
     name: Events.InteractionCreate,
     once: false,
+    
     async execute(interaction, client) {
-        if (!interaction.inGuild() || interaction.user.bot) return;
+        if (interaction.user.bot) return;
 
-        const userData = getUser(interaction.user.id);
-        if (userData.language === 'lang_auto') {
-            setLastKnownLocale(interaction.user.id, interaction.locale);
+        try {
+            await logInteraction(interaction);
+            await trackInteraction(interaction);
+        } catch (error) {
+            console.error('[FATAL] Erro nos handlers de log/analytics:', error);
+        }
+        
+        if (interaction.inGuild()) {
+            const userData = getUser(interaction.user.id);
+            if (userData.language === 'lang_auto') {
+                setLastKnownLocale(interaction.user.id, interaction.locale);
+            }
         }
 
         if (interaction.isChatInputCommand()) {
@@ -25,7 +37,6 @@ module.exports = {
                 return interactionErrorHandler.execute(interaction, new Error(`Comando não encontrado: /${interaction.commandName}`));
             }
 
-            // checa se o COMANDO INTEIRO está em desenvolvimento
             if (command.inDevelopment) {
                 return devCommandHandler.execute(interaction);
             }
