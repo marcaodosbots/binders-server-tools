@@ -1,4 +1,4 @@
 
 module.exports = {
-    currentTosVersion: 2, 
+    currentTosVersion: 3, 
 };

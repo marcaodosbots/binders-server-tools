@@ -1,24 +1,17 @@
-// src/subcommands/binder/Personalizacao/idioma.js
 const { ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 const createEmbed = require('../../../utils/createEmbed.js');
 const getLanguage = require('../../../utils/getLanguage.js');
 
-// central de textos para esse handler
 const texts = {
-    title: {
-        'pt_BR': '<:mundo:1394088927794827350> Configuração de Idioma',
-        'en_US': '<:mundo:1394088927794827350> Language Configuration',
-    },
+    title: { 'pt_BR': '<:mundo:1394088927794827350> Configuração de Idioma', 'en_US': '<:mundo:1394088927794827350> Language Configuration' },
     descriptions: {
         'pt_BR': [
-            "Esta configuração é **pessoal** e afeta apenas como eu respondo a **você**. Selecione uma das opções abaixo para definir sua preferência de idioma para todas as minhas respostas.",
-            "Vamos ajustar como eu falo com você! Sua escolha de idioma é só sua e não afeta outros usuários. Escolha uma opção no menu para salvar sua preferência.",
-            "Personalize sua experiência definindo seu idioma preferido. Esta é uma configuração individual que será salva no seu perfil do bot.",
+            "Esta configuração é **pessoal** e afeta apenas como eu respondo a **você**.\n\nSelecione uma das opções abaixo para definir sua preferência de idioma.",
+            "Vamos ajustar como eu falo com você! Sua escolha de idioma é só sua e não afeta outros usuários.\n\nEscolha uma opção no menu para salvar sua preferência.",
         ],
         'en_US': [
-            'This setting is **personal** and only affects how I reply to **you**. Please select an option below to set your language preference for all my replies.',
-            'Let\'s adjust how I talk to you! Your language choice is yours alone and doesn\'t affect other users. Choose an option from the menu to save your preference.',
-            'Personalize your experience by setting your preferred language. This is an individual setting that will be saved to your bot profile.',
+            'This setting is **personal** and only affects how I reply to **you**.\n\nPlease select an option below to set your language preference.',
+            'Let\'s adjust how I talk to you! Your language choice is yours alone and doesn\'t affect other users.\n\nChoose an option from the menu to save your preference.',
         ]
     },
     menu: {
@@ -34,8 +27,8 @@ const texts = {
 
 module.exports = {
     async execute(interaction, client) {
-        // defer
-        await interaction.deferReply();
+        // AQUI A CORREÇÃO: avisa o discord que a gente vai responder
+        await interaction.deferReply({ ephemeral: true });
 
         const lang = getLanguage(interaction);
         const randomDescription = texts.descriptions[lang][Math.floor(Math.random() * texts.descriptions[lang].length)];
@@ -56,6 +49,7 @@ module.exports = {
                 ])
         );
         
+        // como a gente usou o defer, agora a gente edita a resposta 'pensando...'
         await interaction.editReply({
             embeds: [langEmbed],
             components: [langMenu],
