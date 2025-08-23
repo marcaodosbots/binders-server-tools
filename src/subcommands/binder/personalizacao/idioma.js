@@ -28,7 +28,7 @@ const texts = {
 module.exports = {
     async execute(interaction, client) {
         // AQUI A CORREÇÃO: avisa o discord que a gente vai responder
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply();
 
         const lang = getLanguage(interaction);
         const randomDescription = texts.descriptions[lang][Math.floor(Math.random() * texts.descriptions[lang].length)];
